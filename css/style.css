@@ -867,6 +867,81 @@ section.tight { padding: 60px 0; }
   .shop-grid { grid-template-columns: 1fr; }
 }
 
+/* GFC Cup — group tables and fixtures */
+.gfccup-subhead {
+  font-family: var(--font-display);
+  color: var(--blue);
+  font-size: 1.1rem;
+  margin: 30px 0 14px;
+}
+.gfccup-subhead:first-child { margin-top: 0; }
+.gfccup-empty { color: var(--slate); padding: 10px 0 20px; }
+
+.standings-wrap { overflow-x: auto; }
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+  font-size: 0.92rem;
+}
+.standings-table th, .standings-table td {
+  padding: 10px 12px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+.standings-table th {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--slate);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.standings-table td.team, .standings-table th:nth-child(2) { text-align: left; }
+.standings-table td.pos { color: var(--slate); font-weight: 600; }
+.standings-table td.team { font-weight: 600; color: var(--blue); }
+.standings-table td.pts { font-weight: 700; color: var(--red); }
+.standings-table tbody tr:hover { background: var(--ivory-dim); }
+
+.fixtures-list { display: flex; flex-direction: column; gap: 10px; }
+.fixture-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 90px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.fixture-meta { font-size: 0.8rem; color: var(--slate); }
+.fixture-match {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-weight: 600;
+  color: var(--blue);
+  text-align: center;
+}
+.fixture-team { flex: 1; text-align: right; }
+.fixture-match .fixture-team:last-child { text-align: left; }
+.fixture-vs { font-size: 0.8rem; color: var(--slate); font-weight: 500; flex: none; }
+.fixture-score {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--red);
+  flex: none;
+  min-width: 60px;
+  text-align: center;
+}
+.fixture-field { font-size: 0.8rem; color: var(--slate); text-align: right; }
+@media (max-width: 700px) {
+  .fixture-row { grid-template-columns: 1fr; text-align: center; }
+  .fixture-match { flex-direction: column; gap: 4px; }
+  .fixture-team { text-align: center !important; }
+  .fixture-field { text-align: center; }
+}
+
 /* Player cards — Players tab */
 .player-grid {
   display: grid;

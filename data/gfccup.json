@@ -1,0 +1,10 @@
+{
+  "tournamentName": "GFC Cup",
+  "groups": [
+    { "id": "A", "label": "Group A", "teams": [] },
+    { "id": "B", "label": "Group B", "teams": [] },
+    { "id": "C", "label": "Group C", "teams": [] },
+    { "id": "D", "label": "Group D", "teams": [] }
+  ],
+  "fixtures": []
+}

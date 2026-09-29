@@ -88,3 +88,47 @@ collections:
                 hint: "Pick every size available for this item. Choose just 'Not applicable' for items that don't need a size (e.g. keyrings, mugs, scarves)."
                 options: ["Not applicable", "XS", "S", "M", "L", "XL", "XXL", "One size"]
                 default: ["Not applicable"]
+
+  - name: "gfccup"
+    label: "GFC Cup"
+    files:
+      - name: "gfccup_data"
+        label: "GFC Cup — Groups & Fixtures"
+        file: "data/gfccup.json"
+        fields:
+          - { label: "Tournament name (shown as the page title)", name: "tournamentName", widget: "string", default: "GFC Cup" }
+
+          - label: "Groups"
+            name: "groups"
+            widget: "list"
+            summary: "{{fields.label}}"
+            hint: "The group table tabs visitors see (Group A, Group B...). Add teams here — the Group Table standings are worked out automatically from the scores you enter in Fixtures below, so you don't need to enter points or wins yourself."
+            fields:
+              - { label: "Group ID (single letter, e.g. A)", name: "id", widget: "string" }
+              - { label: "Group Name (shown to visitors)", name: "label", widget: "string" }
+              - label: "Teams in this group"
+                name: "teams"
+                widget: "list"
+                default: []
+                hint: "Add each team's name exactly as you'll type it in Fixtures below (spelling must match)."
+
+          - label: "Fixtures"
+            name: "fixtures"
+            widget: "list"
+            summary: "{{fields.stage}} — {{fields.team1}} vs {{fields.team2}}"
+            hint: "One entry per match — group stage or knockout. Leave both scores blank until the match is played; once you fill them in, the Group Table updates itself. For knockout matches before the group stage finishes, you can type a placeholder like 'Winner Group A' and edit it later."
+            fields:
+              - { label: "Match ID (unique, e.g. g1, qf1, sf1, final)", name: "id", widget: "string" }
+              - label: "Stage"
+                name: "stage"
+                widget: "select"
+                options: ["Group Stage", "Quarter Final", "Semi Final", "Final"]
+                default: "Group Stage"
+              - { label: "Group (only for Group Stage — must match a Group ID above, e.g. A)", name: "group", widget: "string", required: false }
+              - { label: "Date (e.g. 27 June 2026)", name: "date", widget: "string", required: false }
+              - { label: "Time (e.g. 8:00 AM)", name: "time", widget: "string", required: false }
+              - { label: "Field / venue (optional)", name: "field", widget: "string", required: false }
+              - { label: "Team 1", name: "team1", widget: "string" }
+              - { label: "Team 2", name: "team2", widget: "string" }
+              - { label: "Team 1 score (leave blank until played)", name: "score1", widget: "number", value_type: "int", required: false }
+              - { label: "Team 2 score (leave blank until played)", name: "score2", widget: "number", value_type: "int", required: false }

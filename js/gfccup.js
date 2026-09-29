@@ -23,33 +23,58 @@
     return parts.join(" · ");
   }
 
-  // Builds a lookup of team name -> {logo, group} from every group, so fixtures
-  // (which just reference teams by name) can also show the right badge/link.
+  // Builds a lookup so fixtures/goals/cards (which reference a team by its fixed Slot,
+  // e.g. "A1") always show the CURRENT club name, logo and profile link — even after the
+  // admin renames the club. Falls back to matching by the current name too, so a Goals/
+  // Cards "team" entry typed as the club name (instead of its Slot) still resolves.
   function buildTeamMeta(groups) {
-    var map = {};
+    var byId = {};
+    var byName = {};
     (groups || []).forEach(function (g) {
       (g.teams || []).forEach(function (t) {
-        if (t && t.name) map[t.name] = { logo: t.logo || "", group: g.id };
+        if (!t) return;
+        var id = t.id || t.name;
+        if (!id) return;
+        var meta = { id: id, name: t.name || id, logo: t.logo || "", group: g.id };
+        byId[id] = meta;
+        if (t.name) byName[t.name.trim().toLowerCase()] = meta;
       });
     });
-    return map;
+    return { byId: byId, byName: byName };
   }
 
-  function computeStandings(group, fixtures) {
+  // Resolves a value that may be a team's Slot ID or its current display name to that
+  // team's canonical meta ({id, name, logo, group}), or null if it matches nothing on file.
+  function lookupTeam(ref, teamMeta) {
+    if (!ref) return null;
+    ref = String(ref).trim();
+    if (teamMeta.byId[ref]) return teamMeta.byId[ref];
+    var byName = teamMeta.byName[ref.toLowerCase()];
+    return byName || null;
+  }
+
+  function computeStandings(group, fixtures, teamMeta) {
     var stats = {};
+
     (group.teams || []).forEach(function (t) {
-      var name = t && t.name ? t.name : t;
-      if (!name) return;
-      stats[name] = { team: name, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+      var id = t && (t.id || t.name);
+      if (!id) return;
+      stats[id] = { id: id, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
     });
+
+    function slotId(ref) {
+      var found = lookupTeam(ref, teamMeta);
+      return found ? found.id : ref;
+    }
 
     fixtures.forEach(function (f) {
       if (f.stage !== "Group Stage" || f.group !== group.id) return;
       if (!hasScore(f)) return;
       var s1 = Number(f.score1), s2 = Number(f.score2);
-      if (!stats[f.team1]) stats[f.team1] = { team: f.team1, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
-      if (!stats[f.team2]) stats[f.team2] = { team: f.team2, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
-      var a = stats[f.team1], b = stats[f.team2];
+      var id1 = slotId(f.team1), id2 = slotId(f.team2);
+      if (!stats[id1]) stats[id1] = { id: id1, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+      if (!stats[id2]) stats[id2] = { id: id2, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+      var a = stats[id1], b = stats[id2];
       a.p++; b.p++;
       a.gf += s1; a.ga += s2;
       b.gf += s2; b.ga += s1;
@@ -61,6 +86,8 @@
     var rows = Object.keys(stats).map(function (k) {
       var r = stats[k];
       r.gd = r.gf - r.ga;
+      var meta = teamMeta.byId[r.id];
+      r.displayName = meta ? meta.name : r.id;
       return r;
     });
 
@@ -68,68 +95,73 @@
       if (b.pts !== a.pts) return b.pts - a.pts;
       if (b.gd !== a.gd) return b.gd - a.gd;
       if (b.gf !== a.gf) return b.gf - a.gf;
-      return a.team.localeCompare(b.team);
+      return a.displayName.localeCompare(b.displayName);
     });
 
     return rows;
   }
 
-  // Resolves a team slot that may be a literal team name, or a qualifier phrase like
-  // "Winner Group A", "Runner-up Group B", or "Winner qf1" (referencing another fixture's
-  // winner by its Match ID). Returns { display, resolvedName, pending }.
-  // resolvedName is the literal team name once known (for logo/link lookups); pending is
-  // true while the slot can't be worked out yet (earlier matches not finished).
-  function resolveTeamRef(ref, groups, fixtures, depth) {
+  // Resolves a team slot that may be a literal team Slot ID / name, or a qualifier phrase
+  // like "Winner Group A", "Runner-up Group B", or "Winner qf1" (referencing another
+  // fixture's winner by its Match ID). Returns { display, resolvedId, pending }.
+  // resolvedId is the canonical, stable team Slot ID once known (never the display name),
+  // so the caller always looks up the CURRENT name/logo/link for it; pending is true while
+  // the slot can't be worked out yet (earlier matches not finished).
+  function resolveTeamRef(ref, groups, fixtures, teamMeta, depth) {
     ref = (ref || "").trim();
-    if (!ref) return { display: "TBD", resolvedName: null, pending: true };
+    if (!ref) return { display: "TBD", resolvedId: null, pending: true };
     depth = depth || 0;
-    if (depth > 6) return { display: ref, resolvedName: null, pending: true };
+    if (depth > 6) return { display: ref, resolvedId: null, pending: true };
 
     var m = /^Winner\s+Group\s+([A-Za-z0-9]+)$/i.exec(ref);
-    if (m) return resolveGroupRank(m[1], 0, groups, fixtures);
+    if (m) return resolveGroupRank(m[1], 0, groups, fixtures, teamMeta);
 
     m = /^Runner-?\s?up\s+Group\s+([A-Za-z0-9]+)$/i.exec(ref);
-    if (m) return resolveGroupRank(m[1], 1, groups, fixtures);
+    if (m) return resolveGroupRank(m[1], 1, groups, fixtures, teamMeta);
 
     m = /^Winner\s+(.+)$/i.exec(ref);
     if (m) {
       var fixtureId = m[1].trim().toLowerCase();
       var f = fixtures.filter(function (x) { return x.id && x.id.toLowerCase() === fixtureId; })[0];
-      if (!f) return { display: ref, resolvedName: null, pending: true };
-      if (!hasScore(f)) return { display: ref + " (TBD)", resolvedName: null, pending: true };
+      if (!f) return { display: ref, resolvedId: null, pending: true };
+      if (!hasScore(f)) return { display: ref + " (TBD)", resolvedId: null, pending: true };
       var s1 = Number(f.score1), s2 = Number(f.score2);
-      if (s1 === s2) return { display: ref + " (draw — TBD)", resolvedName: null, pending: true };
+      if (s1 === s2) return { display: ref + " (draw — TBD)", resolvedId: null, pending: true };
       var winnerRef = s1 > s2 ? f.team1 : f.team2;
-      return resolveTeamRef(winnerRef, groups, fixtures, depth + 1);
+      return resolveTeamRef(winnerRef, groups, fixtures, teamMeta, depth + 1);
     }
 
-    // A literal team name
-    return { display: ref, resolvedName: ref, pending: false };
+    // A literal team reference — could be a Slot ID or the current club name.
+    var found = lookupTeam(ref, teamMeta);
+    var id = found ? found.id : ref;
+    return { display: found ? found.name : ref, resolvedId: id, pending: false };
   }
 
-  function resolveGroupRank(groupId, rankIndex, groups, fixtures) {
+  function resolveGroupRank(groupId, rankIndex, groups, fixtures, teamMeta) {
     var label = (rankIndex === 0 ? "Winner Group " : "Runner-up Group ") + groupId;
     var g = (groups || []).filter(function (x) { return x.id === groupId; })[0];
-    if (!g) return { display: label + " (TBD)", resolvedName: null, pending: true };
+    if (!g) return { display: label + " (TBD)", resolvedId: null, pending: true };
 
     var groupFixtures = fixtures.filter(function (f) { return f.stage === "Group Stage" && f.group === groupId; });
     var allPlayed = groupFixtures.length > 0 && groupFixtures.every(hasScore);
-    if (!allPlayed) return { display: label + " (TBD)", resolvedName: null, pending: true };
+    if (!allPlayed) return { display: label + " (TBD)", resolvedId: null, pending: true };
 
-    var rows = computeStandings(g, fixtures);
-    if (rows.length <= rankIndex) return { display: label + " (TBD)", resolvedName: null, pending: true };
+    var rows = computeStandings(g, fixtures, teamMeta);
+    if (rows.length <= rankIndex) return { display: label + " (TBD)", resolvedId: null, pending: true };
 
-    var teamName = rows[rankIndex].team;
-    return { display: teamName, resolvedName: teamName, pending: false };
+    var row = rows[rankIndex];
+    return { display: row.displayName, resolvedId: row.id, pending: false };
   }
 
-  function computeTopScorers(fixtures) {
+  function computeTopScorers(fixtures, teamMeta) {
     var stats = {};
     fixtures.forEach(function (f) {
       (f.goals || []).forEach(function (g) {
         if (!g.player) return;
-        var key = g.player + "||" + (g.team || "");
-        if (!stats[key]) stats[key] = { player: g.player, team: g.team || "", goals: 0 };
+        var found = lookupTeam(g.team, teamMeta);
+        var teamRef = found ? found.id : (g.team || "");
+        var key = g.player + "||" + teamRef;
+        if (!stats[key]) stats[key] = { player: g.player, team: teamRef, goals: 0 };
         stats[key].goals += Number(g.goals) || 0;
       });
     });
@@ -141,13 +173,15 @@
     return rows;
   }
 
-  function computeCards(fixtures) {
+  function computeCards(fixtures, teamMeta) {
     var stats = {};
     fixtures.forEach(function (f) {
       (f.cards || []).forEach(function (c) {
         if (!c.player) return;
-        var key = c.player + "||" + (c.team || "");
-        if (!stats[key]) stats[key] = { player: c.player, team: c.team || "", yellow: 0, red: 0 };
+        var found = lookupTeam(c.team, teamMeta);
+        var teamRef = found ? found.id : (c.team || "");
+        var key = c.player + "||" + teamRef;
+        if (!stats[key]) stats[key] = { player: c.player, team: teamRef, yellow: 0, red: 0 };
         if (c.type === "Red") stats[key].red += 1;
         else stats[key].yellow += 1;
       });
@@ -161,30 +195,34 @@
     return rows;
   }
 
-  function teamBadge(name, teamMeta) {
-    var meta = teamMeta[name];
+  // ref here is always a canonical team Slot ID (or, as a fallback, a raw string that
+  // didn't match any team on file) — never assume it's the display name.
+  function teamBadge(ref, teamMeta) {
+    var meta = teamMeta.byId[ref] || lookupTeam(ref, teamMeta);
+    var label = meta ? meta.name : ref;
     var span = el("span", { "class": "team-name-badge" });
     if (meta && meta.logo) {
-      span.appendChild(el("img", { "class": "team-logo", src: meta.logo, alt: name }));
+      span.appendChild(el("img", { "class": "team-logo", src: meta.logo, alt: label }));
     }
     if (meta) {
       var link = el("a", {
         "class": "team-link",
-        href: "club-profile.html?team=" + encodeURIComponent(name) + "&group=" + encodeURIComponent(meta.group)
-      }, name);
+        href: "club-profile.html?team=" + encodeURIComponent(meta.id) + "&group=" + encodeURIComponent(meta.group)
+      }, label);
       span.appendChild(link);
     } else {
-      span.appendChild(el("span", {}, name));
+      span.appendChild(el("span", {}, label));
     }
     return span;
   }
 
-  // Renders a fixture's team slot: a resolved literal team (badge/link) or a still-pending
-  // qualifier phrase like "Winner Group A (TBD)" shown as plain, muted text.
+  // Renders a fixture's team slot: a resolved literal team (badge/link, always showing the
+  // CURRENT club name) or a still-pending qualifier phrase like "Winner Group A (TBD)"
+  // shown as plain, muted text.
   function teamSlot(ref, groups, fixtures, teamMeta) {
-    var resolved = resolveTeamRef(ref, groups, fixtures, 0);
-    if (!resolved.pending && resolved.resolvedName) {
-      return teamBadge(resolved.resolvedName, teamMeta);
+    var resolved = resolveTeamRef(ref, groups, fixtures, teamMeta, 0);
+    if (!resolved.pending && resolved.resolvedId) {
+      return teamBadge(resolved.resolvedId, teamMeta);
     }
     return el("span", { "class": "team-name-badge team-pending" }, resolved.display);
   }
@@ -201,7 +239,7 @@
       var tr = el("tr");
       tr.appendChild(el("td", { "class": "pos" }, String(i + 1)));
       var teamTd = el("td", { "class": "team" });
-      teamTd.appendChild(teamBadge(r.team, teamMeta));
+      teamTd.appendChild(teamBadge(r.id, teamMeta));
       tr.appendChild(teamTd);
       tr.appendChild(el("td", {}, String(r.p)));
       tr.appendChild(el("td", {}, String(r.w)));
@@ -328,7 +366,7 @@
       });
       if (!isFirst) panel.setAttribute("hidden", "");
 
-      var standingsRows = computeStandings(g, fixtures);
+      var standingsRows = computeStandings(g, fixtures, teamMeta);
       panel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Group Table"));
       panel.appendChild(renderStandingsTable(standingsRows, teamMeta));
 
@@ -386,11 +424,11 @@
     });
     statsPanel.setAttribute("hidden", "");
 
-    var scorers = computeTopScorers(fixtures);
+    var scorers = computeTopScorers(fixtures, teamMeta);
     statsPanel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Top Scorers"));
     statsPanel.appendChild(renderTopScorers(scorers, teamMeta));
 
-    var cards = computeCards(fixtures);
+    var cards = computeCards(fixtures, teamMeta);
     statsPanel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Cards"));
     statsPanel.appendChild(renderCardsTable(cards, teamMeta));
 

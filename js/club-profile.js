@@ -1,4 +1,4 @@
-/* Renders a single club's squad + staff (club-profile.html?team=<name>&group=<id>) from data/gfccup.json */
+/* Renders a single club's squad + staff (club-profile.html?team=<slot id>&group=<id>) from data/gfccup.json */
 (function () {
   var POSITION_ORDER = { "Keeper": 0, "Defender": 1, "Midfielder": 2, "Forward": 3 };
 
@@ -11,18 +11,23 @@
     return e;
   }
 
-  function findTeam(data, name, groupId) {
+  // ref is normally a team's Slot ID (?team=A1), which stays stable even after the club is
+  // renamed. Older links may carry the club's name instead, so that's matched too.
+  function findTeam(data, ref, groupId) {
     var groups = data.groups || [];
-    // Prefer the named group, if given, in case of a name clash across groups.
+    function matches(t) {
+      return t && ((t.id && t.id === ref) || t.name === ref);
+    }
+    // Prefer the named group, if given, in case of a clash across groups.
     if (groupId) {
       var g = groups.filter(function (g) { return g.id === groupId; })[0];
       if (g) {
-        var t = (g.teams || []).filter(function (t) { return t.name === name; })[0];
+        var t = (g.teams || []).filter(matches)[0];
         if (t) return t;
       }
     }
     for (var i = 0; i < groups.length; i++) {
-      var match = (groups[i].teams || []).filter(function (t) { return t.name === name; })[0];
+      var match = (groups[i].teams || []).filter(matches)[0];
       if (match) return match;
     }
     return null;
@@ -79,6 +84,13 @@
     document.title = team.name + " | GFC Cup | Gurkha FC Brisbane Nepalese Football Club";
     document.getElementById("club-title").textContent = team.name;
     document.getElementById("club-crumb").textContent = team.name;
+
+    var descEl = document.getElementById("club-description");
+    if (team.description) {
+      descEl.textContent = team.description;
+    } else if (descEl.parentNode) {
+      descEl.style.display = "none";
+    }
 
     var staffParts = [];
     if (team.manager) staffParts.push("Manager: " + team.manager);

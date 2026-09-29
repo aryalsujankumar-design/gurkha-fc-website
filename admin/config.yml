@@ -113,7 +113,11 @@ collections:
                 summary: "{{fields.name}}"
                 hint: "Add as many or as few teams as this group has. Type each name exactly as you'll use it in Fixtures below (spelling must match)."
                 fields:
-                  - { label: "Team name", name: "name", widget: "string" }
+                  - label: "Team Slot (internal — set once, don't change it afterwards)"
+                    name: "id"
+                    widget: "string"
+                    hint: "This is how fixtures know which team is which behind the scenes (e.g. A1). Leave it as it already is — renaming the club below is all you need to do; the new name shows up everywhere automatically."
+                  - { label: "Team name (shown to visitors — rename any time)", name: "name", widget: "string" }
                   - { label: "Team logo (optional)", name: "logo", widget: "image", required: false }
                   - { label: "Short club description (optional, shown on the club's page)", name: "description", widget: "text", required: false }
                   - { label: "Manager (optional)", name: "manager", widget: "string", required: false }
@@ -136,8 +140,8 @@ collections:
           - label: "Fixtures"
             name: "fixtures"
             widget: "list"
-            summary: "{{fields.stage}} — {{fields.team1}} vs {{fields.team2}}"
-            hint: "One entry per match — group stage or knockout. Leave both scores blank until the match is played; once you fill them in, the Group Table updates itself — and for knockout matches, see the Team 1 / Team 2 hints below for how those fill in automatically too."
+            summary: "{{fields.stage}} — {{fields.team1}} vs {{fields.team2}} ({{fields.date}} {{fields.time}}, {{fields.field}})"
+            hint: "One entry per match — group stage or knockout. Date, Time and Field are free text, so you can change any of them on any match at any time — just open the match below and edit those fields. Leave both scores blank until the match is played; once you fill them in, the Group Table updates itself — and for knockout matches, see the Team 1 / Team 2 hints below for how those fill in automatically too."
             fields:
               - { label: "Match ID (unique, e.g. g1, qf1, sf1, final)", name: "id", widget: "string" }
               - label: "Stage"
@@ -152,11 +156,11 @@ collections:
               - label: "Team 1"
                 name: "team1"
                 widget: "string"
-                hint: "For a group-stage match, type the exact team name. For a knockout match, you don't need to know the real team yet — type 'Winner Group A', 'Runner-up Group A' (swap in the right group letter), or 'Winner <Match ID>' (e.g. 'Winner qf1') and the site will automatically fill in and link the real team once that result is known."
+                hint: "For a group-stage match, type that team's Team Slot from Groups above (e.g. A1) — not its name, so the match keeps showing the right team even after you rename the club. For a knockout match, you don't need to know the real team yet — type 'Winner Group A', 'Runner-up Group A' (swap in the right group letter), or 'Winner <Match ID>' (e.g. 'Winner qf1') and the site will automatically fill in and link the real team once that result is known."
               - label: "Team 2"
                 name: "team2"
                 widget: "string"
-                hint: "Same as Team 1 — a real team name, or a placeholder like 'Winner Group B', 'Runner-up Group B', or 'Winner sf1' that resolves itself automatically."
+                hint: "Same as Team 1 — a Team Slot (e.g. B2), or a placeholder like 'Winner Group B', 'Runner-up Group B', or 'Winner sf1' that resolves itself automatically."
               - { label: "Team 1 score (leave blank until played)", name: "score1", widget: "number", value_type: "int", required: false }
               - { label: "Team 2 score (leave blank until played)", name: "score2", widget: "number", value_type: "int", required: false }
               - label: "Goal scorers"
@@ -167,7 +171,7 @@ collections:
                 hint: "One entry per scorer in this match — these automatically add up into the tournament's Top Scorers table on the Stats tab."
                 fields:
                   - { label: "Player name", name: "player", widget: "string" }
-                  - { label: "Team (must match Team 1 or Team 2 above)", name: "team", widget: "string" }
+                  - { label: "Team (the Team Slot or current name from Team 1 / Team 2 above)", name: "team", widget: "string" }
                   - { label: "Goals scored in this match", name: "goals", widget: "number", value_type: "int", default: 1 }
               - label: "Cards"
                 name: "cards"
@@ -177,7 +181,7 @@ collections:
                 hint: "One entry per card shown in this match — these add up into the tournament's Cards table on the Stats tab."
                 fields:
                   - { label: "Player name", name: "player", widget: "string" }
-                  - { label: "Team (must match Team 1 or Team 2 above)", name: "team", widget: "string" }
+                  - { label: "Team (the Team Slot or current name from Team 1 / Team 2 above)", name: "team", widget: "string" }
                   - label: "Card"
                     name: "type"
                     widget: "select"

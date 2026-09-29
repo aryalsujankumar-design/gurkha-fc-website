@@ -6,78 +6,51 @@
       "label": "Group A",
       "teams": [
         {
+          "id": "A1",
           "name": "Gurkha FC",
           "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "Shailoo Gurung",
           "coach": "Roshan Gurung",
           "players": [
-            {
-              "number": "11",
-              "name": "Sujan Aryal",
-              "position": "Forward"
-            },
-            {
-              "number": "10",
-              "name": "Wangel Lama",
-              "position": "Forward"
-            }
+            { "number": "11", "name": "Sujan Aryal", "position": "Forward" },
+            { "number": "10", "name": "Wangel Lama", "position": "Forward" }
           ]
         },
         {
+          "id": "A2",
           "name": "RCSFC",
           "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "",
           "coach": "",
           "players": [
-            {
-              "number": "10",
-              "name": "Arik",
-              "position": "Forward"
-            },
-            {
-              "number": "21",
-              "name": "Rubin"
-            }
+            { "number": "10", "name": "Arik", "position": "Forward" },
+            { "number": "21", "name": "Rubin", "position": "" }
           ]
         },
         {
+          "id": "A3",
           "name": "MFC",
           "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "",
           "coach": "",
           "players": [
-            {
-              "number": "12",
-              "name": "Padam",
-              "position": "Defender"
-            },
-            {
-              "number": "13",
-              "name": "Kasi",
-              "position": "Midfielder"
-            }
+            { "number": "12", "name": "Padam", "position": "Defender" },
+            { "number": "13", "name": "Kasi", "position": "Midfielder" }
           ]
         },
         {
+          "id": "A4",
           "name": "KFC",
           "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "",
           "coach": "",
           "players": [
-            {
-              "number": "54",
-              "name": "Kiran",
-              "position": "Forward"
-            },
-            {
-              "number": "43",
-              "name": "Madan",
-              "position": "Keeper"
-            }
+            { "number": "54", "name": "Kiran", "position": "Forward" },
+            { "number": "43", "name": "Madan", "position": "Keeper" }
           ]
         }
       ]
@@ -86,551 +59,64 @@
       "id": "B",
       "label": "Group B",
       "teams": [
-        {
-          "name": "B1",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        },
-        {
-          "name": "B2",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        },
-        {
-          "name": "B3",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        },
-        {
-          "name": "B4",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        }
+        { "id": "B1", "name": "B1", "logo": "", "description": "", "manager": "", "coach": "", "players": [] },
+        { "id": "B2", "name": "B2", "logo": "", "description": "", "manager": "", "coach": "", "players": [] },
+        { "id": "B3", "name": "B3", "logo": "", "description": "", "manager": "", "coach": "", "players": [] },
+        { "id": "B4", "name": "B4", "logo": "", "description": "", "manager": "", "coach": "", "players": [] }
       ]
     },
     {
       "id": "C",
       "label": "Group C",
       "teams": [
-        {
-          "name": "C1",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        },
-        {
-          "name": "C2",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        },
-        {
-          "name": "C3",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        },
-        {
-          "name": "C4",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        }
+        { "id": "C1", "name": "C1", "logo": "", "description": "", "manager": "", "coach": "", "players": [] },
+        { "id": "C2", "name": "C2", "logo": "", "description": "", "manager": "", "coach": "", "players": [] },
+        { "id": "C3", "name": "C3", "logo": "", "description": "", "manager": "", "coach": "", "players": [] },
+        { "id": "C4", "name": "C4", "logo": "", "description": "", "manager": "", "coach": "", "players": [] }
       ]
     },
     {
       "id": "D",
       "label": "Group D",
       "teams": [
-        {
-          "name": "D1",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        },
-        {
-          "name": "D2",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        },
-        {
-          "name": "D3",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        },
-        {
-          "name": "D4",
-          "logo": "",
-          "description": "",
-          "manager": "",
-          "coach": "",
-          "players": []
-        }
+        { "id": "D1", "name": "D1", "logo": "", "description": "", "manager": "", "coach": "", "players": [] },
+        { "id": "D2", "name": "D2", "logo": "", "description": "", "manager": "", "coach": "", "players": [] },
+        { "id": "D3", "name": "D3", "logo": "", "description": "", "manager": "", "coach": "", "players": [] },
+        { "id": "D4", "name": "D4", "logo": "", "description": "", "manager": "", "coach": "", "players": [] }
       ]
     }
   ],
   "fixtures": [
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "8:00 AM",
-      "date": "29 October 2026",
-      "team1": "A1",
-      "team2": "A2",
-      "field": "Sagarmatha",
-      "id": "g1",
-      "stage": "Group Stage",
-      "group": "A",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "8:00 AM",
-      "date": "29 October 2026",
-      "team1": "A3",
-      "team2": "A4",
-      "field": "Everest",
-      "id": "g2",
-      "stage": "Group Stage",
-      "group": "A",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "8:30 AM",
-      "date": "29 October 2026",
-      "team1": "B1",
-      "team2": "B2",
-      "field": "Sagarmatha",
-      "id": "g3",
-      "stage": "Group Stage",
-      "group": "B",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "8:30 AM",
-      "date": "29 October 2026",
-      "team1": "B3",
-      "team2": "B4",
-      "field": "Everest",
-      "id": "g4",
-      "stage": "Group Stage",
-      "group": "B",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "9:00 AM",
-      "date": "29 October 2026",
-      "team1": "C1",
-      "team2": "C2",
-      "field": "Sagarmatha",
-      "id": "g5",
-      "stage": "Group Stage",
-      "group": "C",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "9:00 AM",
-      "date": "29 October 2026",
-      "team1": "C3",
-      "team2": "C4",
-      "field": "Everest",
-      "id": "g6",
-      "stage": "Group Stage",
-      "group": "C",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "9:30 AM",
-      "date": "29 October 2026",
-      "team1": "D1",
-      "team2": "D2",
-      "field": "Sagarmatha",
-      "id": "g7",
-      "stage": "Group Stage",
-      "group": "D",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "9:30 AM",
-      "date": "29 October 2026",
-      "team1": "D3",
-      "team2": "D4",
-      "field": "Everest",
-      "id": "g8",
-      "stage": "Group Stage",
-      "group": "D",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "10:00 AM",
-      "date": "29 October 2026",
-      "team1": "A1",
-      "team2": "A3",
-      "field": "Sagarmatha",
-      "id": "g9",
-      "stage": "Group Stage",
-      "group": "A",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "10:00 AM",
-      "date": "29 October 2026",
-      "team1": "A2",
-      "team2": "A4",
-      "field": "Everest",
-      "id": "g10",
-      "stage": "Group Stage",
-      "group": "A",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "10:30 AM",
-      "date": "29 October 2026",
-      "team1": "B1",
-      "team2": "B3",
-      "field": "Sagarmatha",
-      "id": "g11",
-      "stage": "Group Stage",
-      "group": "B",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "10:30 AM",
-      "date": "29 October 2026",
-      "team1": "B2",
-      "team2": "B4",
-      "field": "Everest",
-      "id": "g12",
-      "stage": "Group Stage",
-      "group": "B",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "11:00 AM",
-      "date": "29 October 2026",
-      "team1": "C1",
-      "team2": "C3",
-      "field": "Sagarmatha",
-      "id": "g13",
-      "stage": "Group Stage",
-      "group": "C",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "11:00 AM",
-      "date": "29 October 2026",
-      "team1": "C2",
-      "team2": "C4",
-      "field": "Everest",
-      "id": "g14",
-      "stage": "Group Stage",
-      "group": "C",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "11:30 AM",
-      "date": "29 October 2026",
-      "team1": "D1",
-      "team2": "D3",
-      "field": "Sagarmatha",
-      "id": "g15",
-      "stage": "Group Stage",
-      "group": "D",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "11:30 AM",
-      "date": "29 October 2026",
-      "team1": "D2",
-      "team2": "D4",
-      "field": "Everest",
-      "id": "g16",
-      "stage": "Group Stage",
-      "group": "D",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "12:00 PM",
-      "date": "29 October 2026",
-      "team1": "A1",
-      "team2": "A4",
-      "field": "Sagarmatha",
-      "id": "g17",
-      "stage": "Group Stage",
-      "group": "A",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "12:00 PM",
-      "date": "29 October 2026",
-      "team1": "A2",
-      "team2": "A3",
-      "field": "Everest",
-      "id": "g18",
-      "stage": "Group Stage",
-      "group": "A",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "12:30 PM",
-      "date": "29 October 2026",
-      "team1": "B1",
-      "team2": "B4",
-      "field": "Sagarmatha",
-      "id": "g19",
-      "stage": "Group Stage",
-      "group": "B",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "12:30 PM",
-      "date": "29 October 2026",
-      "team1": "B2",
-      "team2": "B3",
-      "field": "Everest",
-      "id": "g20",
-      "stage": "Group Stage",
-      "group": "B",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "1:00 PM",
-      "date": "29 October 2026",
-      "team1": "C1",
-      "team2": "C4",
-      "field": "Sagarmatha",
-      "id": "g21",
-      "stage": "Group Stage",
-      "group": "C",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "1:00 PM",
-      "date": "29 October 2026",
-      "team1": "C2",
-      "team2": "C3",
-      "field": "Everest",
-      "id": "g22",
-      "stage": "Group Stage",
-      "group": "C",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "1:30 PM",
-      "date": "29 October 2026",
-      "team1": "D1",
-      "team2": "D4",
-      "field": "Sagarmatha",
-      "id": "g23",
-      "stage": "Group Stage",
-      "group": "D",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "1:30 PM",
-      "date": "29 October 2026",
-      "team1": "D2",
-      "team2": "D3",
-      "field": "Everest",
-      "id": "g24",
-      "stage": "Group Stage",
-      "group": "D",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "2:15 PM",
-      "date": "29 October 2026",
-      "team1": "Winner Group A",
-      "team2": "Runner-up Group B",
-      "field": "Sagarmatha",
-      "id": "qf1",
-      "stage": "Quarter Final",
-      "group": "",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "2:15 PM",
-      "date": "29 October 2026",
-      "team1": "Winner Group B",
-      "team2": "Runner-up Group A",
-      "field": "Everest",
-      "id": "qf2",
-      "stage": "Quarter Final",
-      "group": "",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "2:45 PM",
-      "date": "29 October 2026",
-      "team1": "Winner Group C",
-      "team2": "Runner-up Group D",
-      "field": "Sagarmatha",
-      "id": "qf3",
-      "stage": "Quarter Final",
-      "group": "",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "2:45 PM",
-      "date": "29 October 2026",
-      "team1": "Winner Group D",
-      "team2": "Runner-up Group C",
-      "field": "Everest",
-      "id": "qf4",
-      "stage": "Quarter Final",
-      "group": "",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "3:30 PM",
-      "date": "29 October 2026",
-      "team1": "Winner qf1",
-      "team2": "Winner qf3",
-      "field": "Sagarmatha",
-      "id": "sf1",
-      "stage": "Semi Final",
-      "group": "",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "3:30 PM",
-      "date": "29 October 2026",
-      "team1": "Winner qf2",
-      "team2": "Winner qf4",
-      "field": "Everest",
-      "id": "sf2",
-      "stage": "Semi Final",
-      "group": "",
-      "score1": null
-    },
-    {
-      "goals": [],
-      "score2": null,
-      "cards": [],
-      "time": "4:15 PM",
-      "date": "29 October 2026",
-      "team1": "Winner sf1",
-      "team2": "Winner sf2",
-      "field": "Sagarmatha",
-      "id": "final",
-      "stage": "Final",
-      "group": "",
-      "score1": null
-    }
+    { "id": "g1", "stage": "Group Stage", "group": "A", "date": "29 October 2026", "time": "8:00 AM", "field": "Sagarmatha", "team1": "A1", "team2": "A2", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g2", "stage": "Group Stage", "group": "A", "date": "29 October 2026", "time": "8:00 AM", "field": "Everest", "team1": "A3", "team2": "A4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g3", "stage": "Group Stage", "group": "B", "date": "29 October 2026", "time": "8:30 AM", "field": "Sagarmatha", "team1": "B1", "team2": "B2", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g4", "stage": "Group Stage", "group": "B", "date": "29 October 2026", "time": "8:30 AM", "field": "Everest", "team1": "B3", "team2": "B4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g5", "stage": "Group Stage", "group": "C", "date": "29 October 2026", "time": "9:00 AM", "field": "Sagarmatha", "team1": "C1", "team2": "C2", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g6", "stage": "Group Stage", "group": "C", "date": "29 October 2026", "time": "9:00 AM", "field": "Everest", "team1": "C3", "team2": "C4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g7", "stage": "Group Stage", "group": "D", "date": "29 October 2026", "time": "9:30 AM", "field": "Sagarmatha", "team1": "D1", "team2": "D2", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g8", "stage": "Group Stage", "group": "D", "date": "29 October 2026", "time": "9:30 AM", "field": "Everest", "team1": "D3", "team2": "D4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g9", "stage": "Group Stage", "group": "A", "date": "29 October 2026", "time": "10:00 AM", "field": "Sagarmatha", "team1": "A1", "team2": "A3", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g10", "stage": "Group Stage", "group": "A", "date": "29 October 2026", "time": "10:00 AM", "field": "Everest", "team1": "A2", "team2": "A4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g11", "stage": "Group Stage", "group": "B", "date": "29 October 2026", "time": "10:30 AM", "field": "Sagarmatha", "team1": "B1", "team2": "B3", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g12", "stage": "Group Stage", "group": "B", "date": "29 October 2026", "time": "10:30 AM", "field": "Everest", "team1": "B2", "team2": "B4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g13", "stage": "Group Stage", "group": "C", "date": "29 October 2026", "time": "11:00 AM", "field": "Sagarmatha", "team1": "C1", "team2": "C3", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g14", "stage": "Group Stage", "group": "C", "date": "29 October 2026", "time": "11:00 AM", "field": "Everest", "team1": "C2", "team2": "C4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g15", "stage": "Group Stage", "group": "D", "date": "29 October 2026", "time": "11:30 AM", "field": "Sagarmatha", "team1": "D1", "team2": "D3", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g16", "stage": "Group Stage", "group": "D", "date": "29 October 2026", "time": "11:30 AM", "field": "Everest", "team1": "D2", "team2": "D4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g17", "stage": "Group Stage", "group": "A", "date": "29 October 2026", "time": "12:00 PM", "field": "Sagarmatha", "team1": "A1", "team2": "A4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g18", "stage": "Group Stage", "group": "A", "date": "29 October 2026", "time": "12:00 PM", "field": "Everest", "team1": "A2", "team2": "A3", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g19", "stage": "Group Stage", "group": "B", "date": "29 October 2026", "time": "12:30 PM", "field": "Sagarmatha", "team1": "B1", "team2": "B4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g20", "stage": "Group Stage", "group": "B", "date": "29 October 2026", "time": "12:30 PM", "field": "Everest", "team1": "B2", "team2": "B3", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g21", "stage": "Group Stage", "group": "C", "date": "29 October 2026", "time": "1:00 PM", "field": "Sagarmatha", "team1": "C1", "team2": "C4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g22", "stage": "Group Stage", "group": "C", "date": "29 October 2026", "time": "1:00 PM", "field": "Everest", "team1": "C2", "team2": "C3", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g23", "stage": "Group Stage", "group": "D", "date": "29 October 2026", "time": "1:30 PM", "field": "Sagarmatha", "team1": "D1", "team2": "D4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "g24", "stage": "Group Stage", "group": "D", "date": "29 October 2026", "time": "1:30 PM", "field": "Everest", "team1": "D2", "team2": "D3", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "qf1", "stage": "Quarter Final", "group": "", "date": "29 October 2026", "time": "2:15 PM", "field": "Sagarmatha", "team1": "Winner Group A", "team2": "Runner-up Group B", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "qf2", "stage": "Quarter Final", "group": "", "date": "29 October 2026", "time": "2:15 PM", "field": "Everest", "team1": "Winner Group B", "team2": "Runner-up Group A", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "qf3", "stage": "Quarter Final", "group": "", "date": "29 October 2026", "time": "2:45 PM", "field": "Sagarmatha", "team1": "Winner Group C", "team2": "Runner-up Group D", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "qf4", "stage": "Quarter Final", "group": "", "date": "29 October 2026", "time": "2:45 PM", "field": "Everest", "team1": "Winner Group D", "team2": "Runner-up Group C", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "sf1", "stage": "Semi Final", "group": "", "date": "29 October 2026", "time": "3:30 PM", "field": "Sagarmatha", "team1": "Winner qf1", "team2": "Winner qf3", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "sf2", "stage": "Semi Final", "group": "", "date": "29 October 2026", "time": "3:30 PM", "field": "Everest", "team1": "Winner qf2", "team2": "Winner qf4", "score1": null, "score2": null, "goals": [], "cards": [] },
+    { "id": "final", "stage": "Final", "group": "", "date": "29 October 2026", "time": "4:15 PM", "field": "Sagarmatha", "team1": "Winner sf1", "team2": "Winner sf2", "score1": null, "score2": null, "goals": [], "cards": [] }
   ]
 }

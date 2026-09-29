@@ -15,14 +15,6 @@
   ],
   "events": [
     {
-      "id": "gala-2026",
-      "category": "gala-night",
-      "title": "2026",
-      "subtitle": "Gala Night 2026",
-      "lede": "Celebrating another season with the Gurkha FC community — 2026 edition.",
-      "photos": []
-    },
-    {
       "id": "gala-2025",
       "category": "gala-night",
       "title": "2025",
@@ -73,9 +65,6 @@
           "src": "/images/uploads/ccc.jpg"
         },
         {
-          "src": "/images/uploads/ccc.jpg"
-        },
-        {
           "src": "/images/uploads/ccccc.jpg"
         },
         {
@@ -83,6 +72,24 @@
         },
         {
           "src": "/images/uploads/gdg.jpg"
+        },
+        {
+          "src": "/images/uploads/kkk.jpg"
+        },
+        {
+          "src": "/images/uploads/mmm.jpg"
+        },
+        {
+          "src": "/images/uploads/ss.jpg"
+        },
+        {
+          "src": "/images/uploads/knk.jpg"
+        },
+        {
+          "src": "/images/uploads/kn.jpg"
+        },
+        {
+          "src": "/images/uploads/yy.jpg"
         }
       ]
     },

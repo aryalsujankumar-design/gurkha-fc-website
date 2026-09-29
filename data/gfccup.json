@@ -25,28 +25,60 @@
           ]
         },
         {
-          "name": "A2",
-          "logo": "",
+          "name": "RCSFC",
+          "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "",
           "coach": "",
-          "players": []
+          "players": [
+            {
+              "number": "10",
+              "name": "Arik",
+              "position": "Forward"
+            },
+            {
+              "number": "21",
+              "name": "Rubin"
+            }
+          ]
         },
         {
-          "name": "A3",
-          "logo": "",
+          "name": "MFC",
+          "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "",
           "coach": "",
-          "players": []
+          "players": [
+            {
+              "number": "12",
+              "name": "Padam",
+              "position": "Defender"
+            },
+            {
+              "number": "13",
+              "name": "Kasi",
+              "position": "Midfielder"
+            }
+          ]
         },
         {
-          "name": "A4",
-          "logo": "",
+          "name": "KFC",
+          "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "",
           "coach": "",
-          "players": []
+          "players": [
+            {
+              "number": "54",
+              "name": "Kiran",
+              "position": "Forward"
+            },
+            {
+              "number": "43",
+              "name": "Madan",
+              "position": "Keeper"
+            }
+          ]
         }
       ]
     },

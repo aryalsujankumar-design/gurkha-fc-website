@@ -62,3 +62,29 @@ collections:
                 widget: "select"
                 options: ["Keeper", "Defender", "Midfielder", "Forward"]
               - { label: "Photo", name: "photo", widget: "image" }
+
+  - name: "shop"
+    label: "Shop"
+    files:
+      - name: "shop_data"
+        label: "Merchandise"
+        file: "data/shop.json"
+        fields:
+          - label: "Items"
+            name: "items"
+            widget: "list"
+            summary: "{{fields.name}} — {{fields.price}}"
+            hint: "Visitors browse these on the Shop page and send an enquiry to order — there's no online payment, so pricing and pickup/payment is arranged directly with the club."
+            fields:
+              - { label: "Item ID (unique, lowercase, no spaces — e.g. home-jersey-2026)", name: "id", widget: "string" }
+              - { label: "Name", name: "name", widget: "string" }
+              - { label: "Price (e.g. $45)", name: "price", widget: "string" }
+              - { label: "Photo", name: "image", widget: "image" }
+              - { label: "Description (optional)", name: "description", widget: "text", required: false }
+              - label: "Available sizes"
+                name: "sizes"
+                widget: "select"
+                multiple: true
+                hint: "Pick every size available for this item. Choose just 'Not applicable' for items that don't need a size (e.g. keyrings, mugs, scarves)."
+                options: ["Not applicable", "XS", "S", "M", "L", "XL", "XXL", "One size"]
+                default: ["Not applicable"]

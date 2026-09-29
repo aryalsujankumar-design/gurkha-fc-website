@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gallery | Gurkha FC</title>
-<meta name="description" content="Photos from Gurkha FC — Brisbane's Nepalese football club.">
+<title>Shop | Gurkha FC Brisbane Nepalese Football Club</title>
+<meta name="description" content="Official Gurkha FC merchandise — jerseys, training kit and club gear. Browse the range and enquire to order.">
+<meta name="keywords" content="Gurkha FC Brisbane merchandise, Gurkha FC shop, Nepalese football club Brisbane">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="images/gurkha-fc-logo.png">
@@ -26,8 +27,8 @@
         <li><a href="index.html">Home</a></li>
         <li><a href="about.html">About Us</a></li>
         <li><a href="achievements.html">Achievements</a></li>
-        <li><a href="gallery.html" aria-current="page">Gallery</a></li>
-        <li><a href="shop.html">Shop</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="shop.html" aria-current="page">Shop</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
     </nav>
@@ -36,28 +37,27 @@
 
 <div class="page-header">
   <div class="wrap">
-    <div class="crumb"><a href="index.html">Home</a> / <a href="gallery.html">Gallery</a> / <span id="event-crumb"></span></div>
-    <h1 id="event-title">Loading…</h1>
-    <p class="lede" id="event-lede"></p>
+    <div class="crumb"><a href="index.html">Home</a> / Shop</div>
+    <h1>Wear the crest.</h1>
+    <p class="lede">Official Gurkha FC merchandise. Pick an item and size, then send us an enquiry to order — we'll confirm availability and sort payment and pickup with you directly.</p>
   </div>
 </div>
 
 <section class="tight">
   <div class="wrap">
-    <a href="gallery.html" class="back-link">&larr; Back to Gallery</a>
-
-    <div class="gallery-grid" id="event-gallery-grid"></div>
-
+    <div class="shop-grid" id="shop-grid">
+      <!-- Rendered by js/shop.js from data/shop.json -->
+    </div>
   </div>
 </section>
 
 <section class="cta-band">
   <div class="wrap">
     <div>
-      <h2 id="event-cta-title">Got photos to share?</h2>
-      <p>Send them through and we'll get this gallery filled with the real thing.</p>
+      <h2>Got a question about sizing or stock?</h2>
+      <p>Reach out and we'll help you find the right fit.</p>
     </div>
-    <a href="contact.html" class="btn btn-dark">Send us photos</a>
+    <a href="contact.html" class="btn btn-dark">Contact us</a>
   </div>
 </section>
 
@@ -98,9 +98,8 @@
   </div>
 </footer>
 
-<script>window.GFC_EVENT_ID = "gala-2024";</script>
 <script src="js/main.js"></script>
-<script src="js/gallery-event.js"></script>
+<script src="js/shop.js"></script>
 <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>

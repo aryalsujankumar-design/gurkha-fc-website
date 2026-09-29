@@ -23,10 +23,34 @@
     return parts.join(" · ");
   }
 
+  // Builds a lookup of team name -> logo URL from every group, so fixtures
+  // (which just reference teams by name) can also show the right badge.
+  function buildLogoMap(groups) {
+    var map = {};
+    (groups || []).forEach(function (g) {
+      (g.teams || []).forEach(function (t) {
+        if (t && t.name && t.logo) map[t.name] = t.logo;
+      });
+    });
+    return map;
+  }
+
+  function teamBadge(name, logoMap) {
+    var span = el("span", { "class": "team-name-badge" });
+    var logo = logoMap[name];
+    if (logo) {
+      span.appendChild(el("img", { "class": "team-logo", src: logo, alt: name }));
+    }
+    span.appendChild(el("span", {}, name));
+    return span;
+  }
+
   function computeStandings(group, fixtures) {
     var stats = {};
     (group.teams || []).forEach(function (t) {
-      stats[t] = { team: t, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+      var name = t && t.name ? t.name : t;
+      if (!name) return;
+      stats[name] = { team: name, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
     });
 
     fixtures.forEach(function (f) {
@@ -60,7 +84,7 @@
     return rows;
   }
 
-  function renderStandingsTable(rows) {
+  function renderStandingsTable(rows, logoMap) {
     if (!rows.length) {
       return el("p", { "class": "gfccup-empty" }, "Teams for this group haven't been announced yet.");
     }
@@ -71,7 +95,9 @@
     rows.forEach(function (r, i) {
       var tr = el("tr");
       tr.appendChild(el("td", { "class": "pos" }, String(i + 1)));
-      tr.appendChild(el("td", { "class": "team" }, r.team));
+      var teamTd = el("td", { "class": "team" });
+      teamTd.appendChild(teamBadge(r.team, logoMap));
+      tr.appendChild(teamTd);
       tr.appendChild(el("td", {}, String(r.p)));
       tr.appendChild(el("td", {}, String(r.w)));
       tr.appendChild(el("td", {}, String(r.d)));
@@ -88,28 +114,32 @@
     return wrap;
   }
 
-  function renderFixtureRow(f) {
+  function renderFixtureRow(f, logoMap) {
     var row = el("div", { "class": "fixture-row" });
     row.appendChild(el("div", { "class": "fixture-meta" }, fmtDate(f) || "&nbsp;"));
     var match = el("div", { "class": "fixture-match" });
-    match.appendChild(el("span", { "class": "fixture-team" }, f.team1));
+    var team1El = el("span", { "class": "fixture-team" });
+    team1El.appendChild(teamBadge(f.team1, logoMap));
+    match.appendChild(team1El);
     if (hasScore(f)) {
       match.appendChild(el("span", { "class": "fixture-score" }, f.score1 + " – " + f.score2));
     } else {
       match.appendChild(el("span", { "class": "fixture-vs" }, "vs"));
     }
-    match.appendChild(el("span", { "class": "fixture-team" }, f.team2));
+    var team2El = el("span", { "class": "fixture-team" });
+    team2El.appendChild(teamBadge(f.team2, logoMap));
+    match.appendChild(team2El);
     row.appendChild(match);
     if (f.field) row.appendChild(el("div", { "class": "fixture-field" }, f.field));
     return row;
   }
 
-  function renderFixturesList(fixtures) {
+  function renderFixturesList(fixtures, logoMap) {
     if (!fixtures.length) {
       return el("p", { "class": "gfccup-empty" }, "Fixtures haven't been scheduled yet.");
     }
     var list = el("div", { "class": "fixtures-list" });
-    fixtures.forEach(function (f) { list.appendChild(renderFixtureRow(f)); });
+    fixtures.forEach(function (f) { list.appendChild(renderFixtureRow(f, logoMap)); });
     return list;
   }
 
@@ -124,6 +154,7 @@
 
     var groups = data.groups || [];
     var fixtures = data.fixtures || [];
+    var logoMap = buildLogoMap(groups);
 
     groups.forEach(function (g, i) {
       var isFirst = i === 0;
@@ -148,11 +179,11 @@
 
       var standingsRows = computeStandings(g, fixtures);
       panel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Group Table"));
-      panel.appendChild(renderStandingsTable(standingsRows));
+      panel.appendChild(renderStandingsTable(standingsRows, logoMap));
 
       var groupFixtures = fixtures.filter(function (f) { return f.stage === "Group Stage" && f.group === g.id; });
       panel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Fixtures & Results"));
-      panel.appendChild(renderFixturesList(groupFixtures));
+      panel.appendChild(renderFixturesList(groupFixtures, logoMap));
 
       panelsWrap.appendChild(panel);
     });
@@ -186,7 +217,7 @@
       rounds.forEach(function (roundName) {
         koPanel.appendChild(el("h3", { "class": "gfccup-subhead" }, roundName));
         var roundFixtures = koFixtures.filter(function (f) { return f.stage === roundName; });
-        koPanel.appendChild(renderFixturesList(roundFixtures));
+        koPanel.appendChild(renderFixturesList(roundFixtures, logoMap));
       });
     }
 

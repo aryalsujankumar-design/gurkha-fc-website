@@ -110,7 +110,11 @@ collections:
                 name: "teams"
                 widget: "list"
                 default: []
-                hint: "Add each team's name exactly as you'll type it in Fixtures below (spelling must match)."
+                summary: "{{fields.name}}"
+                hint: "Add as many or as few teams as this group has. Type each name exactly as you'll use it in Fixtures below (spelling must match)."
+                fields:
+                  - { label: "Team name", name: "name", widget: "string" }
+                  - { label: "Team logo (optional)", name: "logo", widget: "image", required: false }
 
           - label: "Fixtures"
             name: "fixtures"

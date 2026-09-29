@@ -902,6 +902,17 @@ section.tight { padding: 60px 0; }
 .standings-table td.pts { font-weight: 700; color: var(--red); }
 .standings-table tbody tr:hover { background: var(--ivory-dim); }
 
+.team-name-badge { display: inline-flex; align-items: center; gap: 8px; }
+.team-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1px solid var(--line);
+  flex: none;
+}
+
 .fixtures-list { display: flex; flex-direction: column; gap: 10px; }
 .fixture-row {
   display: grid;

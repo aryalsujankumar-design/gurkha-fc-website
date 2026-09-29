@@ -273,7 +273,10 @@
     team2El.appendChild(teamSlot(f.team2, groups, fixtures, teamMeta));
     match.appendChild(team2El);
     row.appendChild(match);
-    if (f.field) row.appendChild(el("div", { "class": "fixture-field" }, f.field));
+    if (f.field) {
+      row.appendChild(el("div", { "class": "fixture-field" },
+        '<span class="fixture-field-label">Field</span>' + f.field));
+    }
     return row;
   }
 

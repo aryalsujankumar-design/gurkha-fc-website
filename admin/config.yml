@@ -115,6 +115,22 @@ collections:
                 fields:
                   - { label: "Team name", name: "name", widget: "string" }
                   - { label: "Team logo (optional)", name: "logo", widget: "image", required: false }
+                  - { label: "Manager (optional)", name: "manager", widget: "string", required: false }
+                  - { label: "Coach (optional)", name: "coach", widget: "string", required: false }
+                  - label: "Squad"
+                    name: "players"
+                    widget: "list"
+                    default: []
+                    summary: "#{{fields.number}} {{fields.name}}"
+                    hint: "Click a team's name on the GFC Cup page to see this squad list, with the Manager and Coach shown at the bottom."
+                    fields:
+                      - { label: "Jersey number", name: "number", widget: "string", required: false }
+                      - { label: "Player name", name: "name", widget: "string" }
+                      - label: "Position"
+                        name: "position"
+                        widget: "select"
+                        options: ["Keeper", "Defender", "Midfielder", "Forward"]
+                        required: false
 
           - label: "Fixtures"
             name: "fixtures"
@@ -136,3 +152,27 @@ collections:
               - { label: "Team 2", name: "team2", widget: "string" }
               - { label: "Team 1 score (leave blank until played)", name: "score1", widget: "number", value_type: "int", required: false }
               - { label: "Team 2 score (leave blank until played)", name: "score2", widget: "number", value_type: "int", required: false }
+              - label: "Goal scorers"
+                name: "goals"
+                widget: "list"
+                default: []
+                summary: "{{fields.player}} ({{fields.goals}})"
+                hint: "One entry per scorer in this match — these automatically add up into the tournament's Top Scorers table on the Stats tab."
+                fields:
+                  - { label: "Player name", name: "player", widget: "string" }
+                  - { label: "Team (must match Team 1 or Team 2 above)", name: "team", widget: "string" }
+                  - { label: "Goals scored in this match", name: "goals", widget: "number", value_type: "int", default: 1 }
+              - label: "Cards"
+                name: "cards"
+                widget: "list"
+                default: []
+                summary: "{{fields.player}} — {{fields.type}}"
+                hint: "One entry per card shown in this match — these add up into the tournament's Cards table on the Stats tab."
+                fields:
+                  - { label: "Player name", name: "player", widget: "string" }
+                  - { label: "Team (must match Team 1 or Team 2 above)", name: "team", widget: "string" }
+                  - label: "Card"
+                    name: "type"
+                    widget: "select"
+                    options: ["Yellow", "Red"]
+                    default: "Yellow"

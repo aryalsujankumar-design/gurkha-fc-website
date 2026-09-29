@@ -912,6 +912,19 @@ section.tight { padding: 60px 0; }
   border: 1px solid var(--line);
   flex: none;
 }
+.team-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1.5px solid transparent;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.team-link:hover { color: var(--red); border-color: var(--red); }
+
+.squad-table td.team { color: var(--blue); }
+
+/* Club profile page badge (crest shown beside the title) */
+.page-header .header-badge#club-logo-wrap { display: flex; align-items: center; justify-content: center; }
+.page-header .header-badge#club-logo-wrap img { width: 100%; display: block; }
 
 .fixtures-list { display: flex; flex-direction: column; gap: 10px; }
 .fixture-row {

@@ -1,0 +1,64 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Where uploaded photos are saved in the repo, and the URL path the site uses to show them
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+publish_mode: simple
+
+collections:
+  - name: "gallery"
+    label: "Gallery"
+    files:
+      - name: "gallery_data"
+        label: "Gallery Tabs & Albums"
+        file: "data/gallery.json"
+        fields:
+          - label: "Tabs"
+            name: "categories"
+            widget: "list"
+            summary: "{{fields.label}}"
+            hint: "These are the tab buttons visitors see on the Gallery page (Gala Night, Achievements, GFC Cup...). Add a new one here to create a brand new tab, then add albums below and set their Tab to match."
+            fields:
+              - { label: "Tab ID (lowercase, no spaces — e.g. community-day)", name: "id", widget: "string" }
+              - { label: "Tab Name (shown to visitors)", name: "label", widget: "string" }
+
+          - label: "Albums"
+            name: "events"
+            widget: "list"
+            summary: "{{fields.title}} — {{fields.category}}"
+            hint: "Each album shows as a card under one of the Tabs above, and has its own page of photos."
+            fields:
+              - { label: "Album ID (unique, lowercase, no spaces — e.g. sports-day-2026)", name: "id", widget: "string" }
+              - { label: "Tab", name: "category", widget: "string", hint: "Must exactly match a Tab ID from the Tabs list above" }
+              - { label: "Title (shown on the card)", name: "title", widget: "string" }
+              - { label: "Page heading", name: "subtitle", widget: "string", required: false }
+              - { label: "Short description", name: "lede", widget: "text", required: false }
+              - label: "Photos"
+                name: "photos"
+                widget: "list"
+                summary: "{{fields.alt}}"
+                fields:
+                  - { label: "Photo", name: "src", widget: "image" }
+                  - { label: "Caption (optional, for accessibility)", name: "alt", widget: "string", required: false }
+
+  - name: "players"
+    label: "Players"
+    files:
+      - name: "players_data"
+        label: "Players Roster"
+        file: "data/players.json"
+        fields:
+          - label: "Players"
+            name: "players"
+            widget: "list"
+            summary: "{{fields.name}} — {{fields.position}}"
+            fields:
+              - { label: "Name", name: "name", widget: "string" }
+              - label: "Position"
+                name: "position"
+                widget: "select"
+                options: ["Keeper", "Defender", "Midfielder", "Forward"]
+              - { label: "Photo", name: "photo", widget: "image" }

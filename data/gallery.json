@@ -1,0 +1,108 @@
+{
+  "categories": [
+    { "id": "gala-night", "label": "Gala Night" },
+    { "id": "achievements", "label": "Achievements" },
+    { "id": "gfc-cup", "label": "GFC Cup" }
+  ],
+  "events": [
+    {
+      "id": "gala-2026",
+      "category": "gala-night",
+      "title": "2026",
+      "subtitle": "Gala Night 2026",
+      "lede": "Celebrating another season with the Gurkha FC community — 2026 edition.",
+      "photos": []
+    },
+    {
+      "id": "gala-2025",
+      "category": "gala-night",
+      "title": "2025",
+      "subtitle": "Gala Night 2025",
+      "lede": "Celebrating another season with the Gurkha FC community — 2025 edition.",
+      "photos": [
+        { "src": "images/gala-2025-01.jpg", "alt": "Gurkha FC members at the Gala Night Dinner 2025" },
+        { "src": "images/gala-2025-02.jpg", "alt": "Families at the Gurkha FC Gala Night Dinner 2025" },
+        { "src": "images/gala-2025-03.jpg", "alt": "Trophies on display at the Gurkha FC Gala Night Dinner 2025" },
+        { "src": "images/gala-2025-04.jpg", "alt": "Award plaques at the Gurkha FC Gala Night Dinner 2025" },
+        { "src": "images/gala-2025-05.jpg", "alt": "Player receiving an award at the Gurkha FC Gala Night Dinner 2025" },
+        { "src": "images/gala-2025-06.jpg", "alt": "Player receiving an award at the Gurkha FC Gala Night Dinner 2025" },
+        { "src": "images/gala-2025-07.jpg", "alt": "Player receiving an award at the Gurkha FC Gala Night Dinner 2025" },
+        { "src": "images/gala-2025-08.jpg", "alt": "Gurkha FC squad group photo with trophies at the Gala Night Dinner 2025" },
+        { "src": "images/gala-2025-09.jpg", "alt": "Sponsor jersey presentation at the Gurkha FC Gala Night Dinner 2025" },
+        { "src": "images/gala-2025-10.jpg", "alt": "Gurkha FC squad celebrating with sponsors and trophies at the Gala Night Dinner 2025" }
+      ]
+    },
+    {
+      "id": "gala-2024",
+      "category": "gala-night",
+      "title": "2024",
+      "subtitle": "Gala Night 2024",
+      "lede": "Celebrating another season with the Gurkha FC community — 2024 edition.",
+      "photos": []
+    },
+    {
+      "id": "kings-2026",
+      "category": "achievements",
+      "title": "Kings Cup 2026",
+      "subtitle": "Kings Cup 2026 champions",
+      "lede": "Celebrating the Kings Cup 2026 title with the squad and supporters.",
+      "photos": []
+    },
+    {
+      "id": "mfc-2019",
+      "category": "achievements",
+      "title": "MFC Cup 2019",
+      "subtitle": "MFC Cup 2019 champions",
+      "lede": "Celebrating our second MFC Cup title, won in Sydney in 2019.",
+      "photos": []
+    },
+    {
+      "id": "mfc-2017",
+      "category": "achievements",
+      "title": "MFC Cup 2017",
+      "subtitle": "MFC Cup 2017 champions",
+      "lede": "Celebrating our first MFC Cup title, won in Sydney in 2017.",
+      "photos": []
+    },
+    {
+      "id": "gfc-8th",
+      "category": "gfc-cup",
+      "title": "8th Expert GFC Cup",
+      "subtitle": "8th Expert GFC Cup",
+      "lede": "Moments from the 8th edition of the Expert GFC Cup, hosted by Gurkha FC.",
+      "thumb": "images/gfc-8th-badge.png",
+      "thumbStyle": "badge",
+      "photos": [
+        { "src": "images/gfc-8th-01.jpg", "alt": "Gurkha FC squad lifting the 8th Expert GFC Cup 2026 trophy" },
+        { "src": "images/gfc-8th-02.jpg", "alt": "Gurkha FC team celebrating as 8th Expert GFC Cup 2026 champions" },
+        { "src": "images/gfc-8th-03.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-04.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-05.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-06.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-07.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-08.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-09.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-10.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-11.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-12.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" },
+        { "src": "images/gfc-8th-13.jpg", "alt": "Team competing at the 8th Expert GFC Cup 2026" }
+      ]
+    },
+    {
+      "id": "gfc-7th",
+      "category": "gfc-cup",
+      "title": "7th Expert GFC Cup",
+      "subtitle": "7th Expert GFC Cup",
+      "lede": "Moments from the 7th edition of the Expert GFC Cup, hosted by Gurkha FC.",
+      "photos": []
+    },
+    {
+      "id": "gfc-6th",
+      "category": "gfc-cup",
+      "title": "6th Expert GFC Cup",
+      "subtitle": "6th Expert GFC Cup",
+      "lede": "Moments from the 6th edition of the Expert GFC Cup, hosted by Gurkha FC.",
+      "photos": []
+    }
+  ]
+}

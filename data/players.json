@@ -1,0 +1,169 @@
+{
+  "players": [
+    {
+      "name": "Thulo Ram Gurung",
+      "position": "Keeper",
+      "photo": "images/player-thulo-ram-gurung.jpg"
+    },
+    {
+      "name": "Samuel Shrestha",
+      "position": "Keeper",
+      "photo": "images/player-samuel-shrestha.jpg"
+    },
+    {
+      "name": "Sam Lama",
+      "position": "Keeper",
+      "photo": "images/player-sam-lama.jpg"
+    },
+    {
+      "name": "Rubin Bogati",
+      "position": "Keeper",
+      "photo": "images/player-rubin-bogati.jpg"
+    },
+    {
+      "name": "Vidh Gurung",
+      "position": "Defender",
+      "photo": "images/player-vidh-gurung.jpg"
+    },
+    {
+      "name": "Success Rai",
+      "position": "Defender",
+      "photo": "images/player-success-rai.jpg"
+    },
+    {
+      "name": "Hemant Rai",
+      "position": "Defender",
+      "photo": "images/player-hemant-rai.jpg"
+    },
+    {
+      "name": "Phurba Lama",
+      "position": "Defender",
+      "photo": "images/player-phurba-lama.jpg"
+    },
+    {
+      "name": "Saroj Giri",
+      "position": "Defender",
+      "photo": "images/player-saroj-giri.jpg"
+    },
+    {
+      "name": "Roshan Gurung",
+      "position": "Defender",
+      "photo": "images/player-roshan-gurung.jpg"
+    },
+    {
+      "name": "Bhai Sharan Thapa",
+      "position": "Defender",
+      "photo": "images/player-bhai-sharan-thapa.jpg"
+    },
+    {
+      "name": "Nir Giri",
+      "position": "Defender",
+      "photo": "images/player-nir-giri.jpg"
+    },
+    {
+      "name": "Madan Paudel",
+      "position": "Defender",
+      "photo": "images/player-madan-paudel.jpg"
+    },
+    {
+      "name": "Cruz Parajuli",
+      "position": "Defender",
+      "photo": "images/player-cruz-parajuli.jpg"
+    },
+    {
+      "name": "Bishal Gurung",
+      "position": "Defender",
+      "photo": "images/player-bishal-gurung.jpg"
+    },
+    {
+      "name": "Rikesh Rai",
+      "position": "Midfielder",
+      "photo": "images/player-rikesh-rai.jpg"
+    },
+    {
+      "name": "Samir Gurung",
+      "position": "Midfielder",
+      "photo": "images/player-samir-gurung.jpg"
+    },
+    {
+      "name": "Biraj Shah Thakuri",
+      "position": "Midfielder",
+      "photo": "images/player-biraj-shah-thakuri.jpg"
+    },
+    {
+      "name": "Marvin Rai",
+      "position": "Midfielder",
+      "photo": "images/player-marvin-rai.jpg"
+    },
+    {
+      "name": "Amit Lama",
+      "position": "Midfielder",
+      "photo": "images/player-amit-lama.jpg"
+    },
+    {
+      "name": "Norshang Tamang",
+      "position": "Midfielder",
+      "photo": "images/player-norshang-tamang.jpg"
+    },
+    {
+      "name": "Anshu Ale",
+      "position": "Midfielder",
+      "photo": "images/player-anshu-ale.jpg"
+    },
+    {
+      "name": "Kiran KC",
+      "position": "Midfielder",
+      "photo": "images/player-kiran-kc.jpg"
+    },
+    {
+      "name": "Ramesh Gurung",
+      "position": "Midfielder",
+      "photo": "images/player-ramesh-gurung.jpg"
+    },
+    {
+      "name": "Pawan Somai",
+      "position": "Forward",
+      "photo": "images/player-pawan-somai.jpg"
+    },
+    {
+      "name": "Samir Thapa",
+      "position": "Forward",
+      "photo": "images/player-samir-thapa.jpg"
+    },
+    {
+      "name": "RK Khadka",
+      "position": "Forward",
+      "photo": "images/player-rk-khadka.jpg"
+    },
+    {
+      "name": "Sujan Aryal",
+      "position": "Forward",
+      "photo": "images/player-sujan-aryal.jpg"
+    },
+    {
+      "name": "Nodan Thapa",
+      "position": "Forward",
+      "photo": "images/player-nodan-thapa.jpg"
+    },
+    {
+      "name": "Sakar Gurung",
+      "position": "Forward",
+      "photo": "images/player-sakar-gurung.jpg"
+    },
+    {
+      "name": "Wangel Lama",
+      "position": "Forward",
+      "photo": "images/player-wangel-lama.jpg"
+    },
+    {
+      "name": "Aaryan Dhakal",
+      "position": "Forward",
+      "photo": "images/player-aaryan-dhakal.jpg"
+    },
+    {
+      "name": "Josiah Newar",
+      "position": "Forward",
+      "photo": "images/player-josiah-newar.jpg"
+    }
+  ]
+}

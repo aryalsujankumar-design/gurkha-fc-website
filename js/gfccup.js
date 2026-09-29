@@ -35,24 +35,6 @@
     return map;
   }
 
-  function teamBadge(name, teamMeta) {
-    var meta = teamMeta[name];
-    var span = el("span", { "class": "team-name-badge" });
-    if (meta && meta.logo) {
-      span.appendChild(el("img", { "class": "team-logo", src: meta.logo, alt: name }));
-    }
-    if (meta) {
-      var link = el("a", {
-        "class": "team-link",
-        href: "club-profile.html?team=" + encodeURIComponent(name) + "&group=" + encodeURIComponent(meta.group)
-      }, name);
-      span.appendChild(link);
-    } else {
-      span.appendChild(el("span", {}, name));
-    }
-    return span;
-  }
-
   function computeStandings(group, fixtures) {
     var stats = {};
     (group.teams || []).forEach(function (t) {
@@ -90,6 +72,55 @@
     });
 
     return rows;
+  }
+
+  // Resolves a team slot that may be a literal team name, or a qualifier phrase like
+  // "Winner Group A", "Runner-up Group B", or "Winner qf1" (referencing another fixture's
+  // winner by its Match ID). Returns { display, resolvedName, pending }.
+  // resolvedName is the literal team name once known (for logo/link lookups); pending is
+  // true while the slot can't be worked out yet (earlier matches not finished).
+  function resolveTeamRef(ref, groups, fixtures, depth) {
+    ref = (ref || "").trim();
+    if (!ref) return { display: "TBD", resolvedName: null, pending: true };
+    depth = depth || 0;
+    if (depth > 6) return { display: ref, resolvedName: null, pending: true };
+
+    var m = /^Winner\s+Group\s+([A-Za-z0-9]+)$/i.exec(ref);
+    if (m) return resolveGroupRank(m[1], 0, groups, fixtures);
+
+    m = /^Runner-?\s?up\s+Group\s+([A-Za-z0-9]+)$/i.exec(ref);
+    if (m) return resolveGroupRank(m[1], 1, groups, fixtures);
+
+    m = /^Winner\s+(.+)$/i.exec(ref);
+    if (m) {
+      var fixtureId = m[1].trim().toLowerCase();
+      var f = fixtures.filter(function (x) { return x.id && x.id.toLowerCase() === fixtureId; })[0];
+      if (!f) return { display: ref, resolvedName: null, pending: true };
+      if (!hasScore(f)) return { display: ref + " (TBD)", resolvedName: null, pending: true };
+      var s1 = Number(f.score1), s2 = Number(f.score2);
+      if (s1 === s2) return { display: ref + " (draw — TBD)", resolvedName: null, pending: true };
+      var winnerRef = s1 > s2 ? f.team1 : f.team2;
+      return resolveTeamRef(winnerRef, groups, fixtures, depth + 1);
+    }
+
+    // A literal team name
+    return { display: ref, resolvedName: ref, pending: false };
+  }
+
+  function resolveGroupRank(groupId, rankIndex, groups, fixtures) {
+    var label = (rankIndex === 0 ? "Winner Group " : "Runner-up Group ") + groupId;
+    var g = (groups || []).filter(function (x) { return x.id === groupId; })[0];
+    if (!g) return { display: label + " (TBD)", resolvedName: null, pending: true };
+
+    var groupFixtures = fixtures.filter(function (f) { return f.stage === "Group Stage" && f.group === groupId; });
+    var allPlayed = groupFixtures.length > 0 && groupFixtures.every(hasScore);
+    if (!allPlayed) return { display: label + " (TBD)", resolvedName: null, pending: true };
+
+    var rows = computeStandings(g, fixtures);
+    if (rows.length <= rankIndex) return { display: label + " (TBD)", resolvedName: null, pending: true };
+
+    var teamName = rows[rankIndex].team;
+    return { display: teamName, resolvedName: teamName, pending: false };
   }
 
   function computeTopScorers(fixtures) {
@@ -130,6 +161,34 @@
     return rows;
   }
 
+  function teamBadge(name, teamMeta) {
+    var meta = teamMeta[name];
+    var span = el("span", { "class": "team-name-badge" });
+    if (meta && meta.logo) {
+      span.appendChild(el("img", { "class": "team-logo", src: meta.logo, alt: name }));
+    }
+    if (meta) {
+      var link = el("a", {
+        "class": "team-link",
+        href: "club-profile.html?team=" + encodeURIComponent(name) + "&group=" + encodeURIComponent(meta.group)
+      }, name);
+      span.appendChild(link);
+    } else {
+      span.appendChild(el("span", {}, name));
+    }
+    return span;
+  }
+
+  // Renders a fixture's team slot: a resolved literal team (badge/link) or a still-pending
+  // qualifier phrase like "Winner Group A (TBD)" shown as plain, muted text.
+  function teamSlot(ref, groups, fixtures, teamMeta) {
+    var resolved = resolveTeamRef(ref, groups, fixtures, 0);
+    if (!resolved.pending && resolved.resolvedName) {
+      return teamBadge(resolved.resolvedName, teamMeta);
+    }
+    return el("span", { "class": "team-name-badge team-pending" }, resolved.display);
+  }
+
   function renderStandingsTable(rows, teamMeta) {
     if (!rows.length) {
       return el("p", { "class": "gfccup-empty" }, "Teams for this group haven't been announced yet.");
@@ -160,12 +219,12 @@
     return wrap;
   }
 
-  function renderFixtureRow(f, teamMeta) {
+  function renderFixtureRow(f, teamMeta, groups, fixtures) {
     var row = el("div", { "class": "fixture-row" });
     row.appendChild(el("div", { "class": "fixture-meta" }, fmtDate(f) || "&nbsp;"));
     var match = el("div", { "class": "fixture-match" });
     var team1El = el("span", { "class": "fixture-team" });
-    team1El.appendChild(teamBadge(f.team1, teamMeta));
+    team1El.appendChild(teamSlot(f.team1, groups, fixtures, teamMeta));
     match.appendChild(team1El);
     if (hasScore(f)) {
       match.appendChild(el("span", { "class": "fixture-score" }, f.score1 + " – " + f.score2));
@@ -173,19 +232,19 @@
       match.appendChild(el("span", { "class": "fixture-vs" }, "vs"));
     }
     var team2El = el("span", { "class": "fixture-team" });
-    team2El.appendChild(teamBadge(f.team2, teamMeta));
+    team2El.appendChild(teamSlot(f.team2, groups, fixtures, teamMeta));
     match.appendChild(team2El);
     row.appendChild(match);
     if (f.field) row.appendChild(el("div", { "class": "fixture-field" }, f.field));
     return row;
   }
 
-  function renderFixturesList(fixtures, teamMeta) {
-    if (!fixtures.length) {
+  function renderFixturesList(fixtureList, teamMeta, groups, allFixtures) {
+    if (!fixtureList.length) {
       return el("p", { "class": "gfccup-empty" }, "Fixtures haven't been scheduled yet.");
     }
     var list = el("div", { "class": "fixtures-list" });
-    fixtures.forEach(function (f) { list.appendChild(renderFixtureRow(f, teamMeta)); });
+    fixtureList.forEach(function (f) { list.appendChild(renderFixtureRow(f, teamMeta, groups, allFixtures)); });
     return list;
   }
 
@@ -275,7 +334,7 @@
 
       var groupFixtures = fixtures.filter(function (f) { return f.stage === "Group Stage" && f.group === g.id; });
       panel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Fixtures & Results"));
-      panel.appendChild(renderFixturesList(groupFixtures, teamMeta));
+      panel.appendChild(renderFixturesList(groupFixtures, teamMeta, groups, fixtures));
 
       panelsWrap.appendChild(panel);
     });
@@ -309,7 +368,7 @@
       rounds.forEach(function (roundName) {
         koPanel.appendChild(el("h3", { "class": "gfccup-subhead" }, roundName));
         var roundFixtures = koFixtures.filter(function (f) { return f.stage === roundName; });
-        koPanel.appendChild(renderFixturesList(roundFixtures, teamMeta));
+        koPanel.appendChild(renderFixturesList(roundFixtures, teamMeta, groups, fixtures));
       });
     }
 

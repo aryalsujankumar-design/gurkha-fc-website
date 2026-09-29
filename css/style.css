@@ -920,6 +920,12 @@ section.tight { padding: 60px 0; }
 }
 .team-link:hover { color: var(--red); border-color: var(--red); }
 
+.team-pending {
+  color: var(--slate);
+  font-style: italic;
+  font-weight: 500;
+}
+
 .squad-table td.team { color: var(--blue); }
 
 /* Club profile page badge (crest shown beside the title) */

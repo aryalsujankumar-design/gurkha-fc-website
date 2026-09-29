@@ -115,6 +115,7 @@ collections:
                 fields:
                   - { label: "Team name", name: "name", widget: "string" }
                   - { label: "Team logo (optional)", name: "logo", widget: "image", required: false }
+                  - { label: "Short club description (optional, shown on the club's page)", name: "description", widget: "text", required: false }
                   - { label: "Manager (optional)", name: "manager", widget: "string", required: false }
                   - { label: "Coach (optional)", name: "coach", widget: "string", required: false }
                   - label: "Squad"
@@ -136,7 +137,7 @@ collections:
             name: "fixtures"
             widget: "list"
             summary: "{{fields.stage}} — {{fields.team1}} vs {{fields.team2}}"
-            hint: "One entry per match — group stage or knockout. Leave both scores blank until the match is played; once you fill them in, the Group Table updates itself. For knockout matches before the group stage finishes, you can type a placeholder like 'Winner Group A' and edit it later."
+            hint: "One entry per match — group stage or knockout. Leave both scores blank until the match is played; once you fill them in, the Group Table updates itself — and for knockout matches, see the Team 1 / Team 2 hints below for how those fill in automatically too."
             fields:
               - { label: "Match ID (unique, e.g. g1, qf1, sf1, final)", name: "id", widget: "string" }
               - label: "Stage"
@@ -148,8 +149,14 @@ collections:
               - { label: "Date (e.g. 27 June 2026)", name: "date", widget: "string", required: false }
               - { label: "Time (e.g. 8:00 AM)", name: "time", widget: "string", required: false }
               - { label: "Field / venue (optional)", name: "field", widget: "string", required: false }
-              - { label: "Team 1", name: "team1", widget: "string" }
-              - { label: "Team 2", name: "team2", widget: "string" }
+              - label: "Team 1"
+                name: "team1"
+                widget: "string"
+                hint: "For a group-stage match, type the exact team name. For a knockout match, you don't need to know the real team yet — type 'Winner Group A', 'Runner-up Group A' (swap in the right group letter), or 'Winner <Match ID>' (e.g. 'Winner qf1') and the site will automatically fill in and link the real team once that result is known."
+              - label: "Team 2"
+                name: "team2"
+                widget: "string"
+                hint: "Same as Team 1 — a real team name, or a placeholder like 'Winner Group B', 'Runner-up Group B', or 'Winner sf1' that resolves itself automatically."
               - { label: "Team 1 score (leave blank until played)", name: "score1", widget: "number", value_type: "int", required: false }
               - { label: "Team 2 score (leave blank until played)", name: "score2", widget: "number", value_type: "int", required: false }
               - label: "Goal scorers"

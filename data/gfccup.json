@@ -39,5 +39,17 @@
       "teams": []
     }
   ],
-  "fixtures": []
+  "fixtures": [
+    {
+      "time": "8:00 AM",
+      "date": "20 oct 2026",
+      "team1": "Gurkha FC ",
+      "team2": "BNFC",
+      "field": "Field-1",
+      "id": "Game 1",
+      "stage": "Group Stage",
+      "group": "A",
+      "score1": 0
+    }
+  ]
 }

@@ -5,10 +5,6 @@
       "label": "Gala Night"
     },
     {
-      "id": "achievements",
-      "label": "Achievements"
-    },
-    {
       "id": "gfc-cup",
       "label": "GFC Cup"
     }
@@ -181,30 +177,6 @@
           "alt": "Family on the red carpet at the Gurkha FC Gala Night 2024"
         }
       ]
-    },
-    {
-      "id": "kings-2026",
-      "category": "achievements",
-      "title": "Kings Cup 2026",
-      "subtitle": "Kings Cup 2026 champions",
-      "lede": "Celebrating the Kings Cup 2026 title with the squad and supporters.",
-      "photos": []
-    },
-    {
-      "id": "mfc-2019",
-      "category": "achievements",
-      "title": "MFC Cup 2019",
-      "subtitle": "MFC Cup 2019 champions",
-      "lede": "Celebrating our second MFC Cup title, won in Sydney in 2019.",
-      "photos": []
-    },
-    {
-      "id": "mfc-2017",
-      "category": "achievements",
-      "title": "MFC Cup 2017",
-      "subtitle": "MFC Cup 2017 champions",
-      "lede": "Celebrating our first MFC Cup title, won in Sydney in 2017.",
-      "photos": []
     },
     {
       "id": "gfc-8th",

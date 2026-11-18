@@ -1504,3 +1504,4 @@ body:has(.cup-org-bar:not([hidden])) { padding-bottom: 4.5rem; }
 .cup-pin-box h3, .cup-pin-box p { margin: 0; }
 .cup-pin-in { padding: 0.6rem 0.7rem; font: inherit; font-size: 1.1rem; border: 1px solid #c5ccd8; border-radius: 8px; letter-spacing: 0.2em; }
 .cup-pin-msg { min-height: 1.2em; color: #b3261e; font-size: 0.9rem; }
+.cup-logo-ctl { margin-left: auto; display: flex; gap: 0.9rem; font-weight: 400; }

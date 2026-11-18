@@ -5,7 +5,7 @@
   var DATA_URL = "data/gfccup.json";
   var REFRESH_MS = 60000;
 
-  var state = { data: null, raw: "", lastModified: "", activeTab: "fixtures", teamFilter: "" };
+  var state = { data: null, raw: "", lastModified: "", activeTab: "teams", teamFilter: "" };
 
   function el(tag, attrs, html) {
     var e = document.createElement(tag);
@@ -667,7 +667,7 @@
     var btns = document.querySelectorAll("#gfccup-tabs .tab-btn");
     var found = false;
     btns.forEach(function (b) { if (b.getAttribute("data-tab") === tabId) found = true; });
-    if (!found) tabId = "fixtures";
+    if (!found) tabId = "teams";
     state.activeTab = tabId;
     btns.forEach(function (b) {
       var on = b.getAttribute("data-tab") === tabId;
@@ -690,11 +690,11 @@
     renderHero(data, ctx);
 
     var tabs = [
-      { id: "fixtures", label: "Fixtures", panel: renderFixturesPanel(ctx) },
-      { id: "groups", label: "Group tables", panel: renderGroupsPanel(ctx) },
+      { id: "teams", label: "Teams", panel: renderTeamsPanel(ctx) },
+      { id: "groups", label: "Group Tables", panel: renderGroupsPanel(ctx) },
+      { id: "fixtures", label: "Group Fixtures", panel: renderFixturesPanel(ctx) },
       { id: "knockouts", label: "Knockouts", panel: renderKnockoutsPanel(ctx) },
-      { id: "stats", label: "Top scorers", panel: renderStatsPanel(ctx) },
-      { id: "teams", label: "Teams", panel: renderTeamsPanel(ctx) }
+      { id: "stats", label: "Top Scorers", panel: renderStatsPanel(ctx) }
     ];
     var rules = renderRulesPanel(ctx);
     if (rules) tabs.push({ id: "rules", label: "Rules", panel: rules });

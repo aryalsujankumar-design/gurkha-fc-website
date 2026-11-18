@@ -68,7 +68,7 @@ export default async (req) => {
     if (!/^[A-Za-z0-9_-]{1,40}$/.test(id)) return;
     fixtures[id] = sanitise(incoming[id] || {});
   });
-  const overlay = { updated: new Date().toISOString(), fixtures };
+  const overlay = { ...cur, updated: new Date().toISOString(), fixtures };
   await store.setJSON("overlay", overlay);
   return json({ ok: true, overlay });
 };

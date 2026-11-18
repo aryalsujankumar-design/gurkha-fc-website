@@ -41,7 +41,7 @@
         {
           "id": "A1",
           "name": "A1",
-          "logo": "/images/uploads/gfc.png",
+          "logo": "",
           "description": "",
           "manager": "Shailoo Gurung",
           "coach": "Roshan Gurung",
@@ -61,7 +61,7 @@
         {
           "id": "A2",
           "name": "A2",
-          "logo": "/images/uploads/gfc.png",
+          "logo": "",
           "description": "",
           "manager": "",
           "coach": "",
@@ -81,7 +81,7 @@
         {
           "id": "A3",
           "name": "A3",
-          "logo": "/images/uploads/gfc.png",
+          "logo": "",
           "description": "",
           "manager": "",
           "coach": "",
@@ -101,7 +101,7 @@
         {
           "id": "A4",
           "name": "A4",
-          "logo": "/images/uploads/gfc.png",
+          "logo": "",
           "description": "",
           "manager": "",
           "coach": "",

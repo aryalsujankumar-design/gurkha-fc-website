@@ -16,7 +16,7 @@
       "teams": [
         {
           "id": "A1",
-          "name": "Gurkha FC",
+          "name": "A1",
           "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "Shailoo Gurung",
@@ -36,7 +36,7 @@
         },
         {
           "id": "A2",
-          "name": "RCSFC",
+          "name": "A2",
           "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "",
@@ -56,7 +56,7 @@
         },
         {
           "id": "A3",
-          "name": "MFC",
+          "name": "A3",
           "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "",
@@ -76,7 +76,7 @@
         },
         {
           "id": "A4",
-          "name": "KFC",
+          "name": "A4",
           "logo": "/images/uploads/gfc.png",
           "description": "",
           "manager": "",

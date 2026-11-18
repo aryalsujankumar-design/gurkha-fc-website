@@ -527,6 +527,67 @@
     return box;
   }
 
+  function shrinkImage(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        URL.revokeObjectURL(url);
+        if (!w || !h) { reject(new Error("bad")); return; }
+        var s = Math.min(1, 256 / Math.max(w, h));
+        var c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(w * s));
+        c.height = Math.max(1, Math.round(h * s));
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(function (b) { if (b) resolve(b); else reject(new Error("bad")); }, "image/png");
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("bad")); };
+      img.src = url;
+    });
+  }
+
+  function logoDone(r, okMsg) {
+    if (r.ok) return load(false).then(function () { updateBar(okMsg); });
+    if (r.status === 401) { org.on = false; org.pin = ""; updateBar(); if (state.data) render(state.data); openPin("That PIN isn't right any more. Unlock again."); return; }
+    throw new Error("fail");
+  }
+
+  function uploadLogo(id, file) {
+    updateBar("Uploading logo…");
+    shrinkImage(file).then(function (blob) {
+      return fetch("/api/cup-logo?t=" + encodeURIComponent(id), {
+        method: "POST", headers: { "x-organiser-pin": org.pin, "content-type": "image/png" }, body: blob
+      });
+    }).then(function (r) { return logoDone(r, "<b>Logo saved.</b> Everyone now sees it."); })
+      .catch(function () { updateBar("<b>Logo didn't upload.</b> Try a PNG or JPG picture."); });
+  }
+
+  function removeLogo(id) {
+    updateBar("Removing logo…");
+    fetch("/api/cup-logo?t=" + encodeURIComponent(id), { method: "DELETE", headers: { "x-organiser-pin": org.pin } })
+      .then(function (r) { return logoDone(r, "<b>Logo removed.</b>"); })
+      .catch(function () { updateBar("<b>Couldn't remove the logo.</b> Try again."); });
+  }
+
+  function logoControls(t, meta) {
+    var id = t.id || t.name;
+    var box = el("span", { "class": "cup-logo-ctl" });
+    var file = el("input", { type: "file", accept: "image/*" });
+    file.hidden = true;
+    var up = el("button", { type: "button", "class": "cup-link-btn" }, meta && meta.logo ? "Change logo" : "Upload logo");
+    up.addEventListener("click", function () { file.click(); });
+    file.addEventListener("change", function () { if (file.files && file.files[0]) uploadLogo(id, file.files[0]); });
+    box.appendChild(file);
+    box.appendChild(up);
+    if (meta && meta.logo) {
+      var rm = el("button", { type: "button", "class": "cup-link-btn" }, "Remove");
+      rm.addEventListener("click", function () { removeLogo(id); });
+      box.appendChild(rm);
+    }
+    return box;
+  }
+
   function applyOverlay(data, txt) {
     var ov = null;
     try { ov = JSON.parse(txt); } catch (e) {}
@@ -539,6 +600,14 @@
       if (o.goals) f.goals = o.goals;
       if (o.cards) f.cards = o.cards;
     });
+    if (ov.logos) {
+      (data.groups || []).forEach(function (g) {
+        (g.teams || []).forEach(function (t) {
+          var id = t.id || t.name;
+          if (id in ov.logos) t.logo = ov.logos[id] ? "/api/cup-logo?t=" + encodeURIComponent(id) + "&v=" + ov.logos[id] : "";
+        });
+      });
+    }
     return ov.updated || "";
   }
 
@@ -833,6 +902,7 @@
         var li = el("li");
         li.appendChild(el("span", { "class": "cup-team-pos" }, String(i + 1)));
         li.appendChild(teamBadge(t.id || t.name, ctx.teamMeta));
+        if (org.on) li.appendChild(logoControls(t, meta));
         list.appendChild(li);
       });
       card.appendChild(list);

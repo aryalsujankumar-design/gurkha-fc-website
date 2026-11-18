@@ -36,18 +36,27 @@
   </div>
 </header>
 
-<div class="page-header">
+<div class="cup-hero">
   <div class="wrap">
-    <div class="crumb"><a href="index.html">Home</a> / GFC Cup</div>
-    <h1 id="gfc-cup-title">GFC Cup</h1>
-    <p class="lede">Group tables, fixtures and results for our annual community football tournament.</p>
+    <div class="cup-hero-main">
+      <div class="cup-hero-badge" id="cup-badge" hidden><img id="cup-badge-img" src="" alt=""></div>
+      <div class="cup-hero-text">
+        <p class="cup-eyebrow" id="cup-eyebrow">Community football &middot; Annual tournament</p>
+        <h1 id="gfc-cup-title">GFC Cup</h1>
+        <p class="cup-when" id="cup-when"></p>
+      </div>
+    </div>
+    <div class="cup-nextup" id="cup-nextup" hidden>
+      <span class="cup-nextup-tag" id="cup-nextup-tag">Next up</span>
+      <span class="cup-nextup-items" id="cup-nextup-items"></span>
+    </div>
   </div>
 </div>
 
-<section class="tight">
+<section class="cup-body">
   <div class="wrap">
 
-    <div class="tabs" role="tablist" aria-label="Filter GFC Cup by group" id="gfccup-tabs"></div>
+    <div class="tabs cup-tabs" role="tablist" aria-label="GFC Cup sections" id="gfccup-tabs"></div>
 
     <div id="gfccup-panels"></div>
 

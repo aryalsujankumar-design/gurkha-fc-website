@@ -1482,4 +1482,4 @@ form.contact-form { display: flex; flex-direction: column; gap: 18px; }
 }
 
 /* Shop is hidden for now — delete this block to bring the Shop links back */
-a[href="shop.html"], li:has(> a[href="shop.html"]) { display: none !important; }
+a[href="shop.html"], a[href="/shop"], a[href$="/shop"], li:has(> a[href="shop.html"]), li:has(> a[href="/shop"]), li:has(> a[href$="/shop"]) { display: none !important; }

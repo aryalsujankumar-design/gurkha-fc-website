@@ -4,6 +4,8 @@
   var KNOCKOUT_ORDER = { "Quarter Final": 0, "Semi Final": 1, "Final": 2 };
   var DATA_URL = "data/gfccup.json";
   var REFRESH_MS = 60000;
+  var SAVE_URL = "/api/cup-state";
+  var org = { on: false, pin: "", dirty: false, draft: {} };
 
   var state = { data: null, raw: "", lastModified: "", activeTab: "teams", teamFilter: "" };
 
@@ -309,7 +311,235 @@
     body.appendChild(center);
     body.appendChild(s2.el);
     card.appendChild(body);
+    if (org.on) card.appendChild(matchEditor(f, s1.resolved, s2.resolved, ctx));
     return card;
+  }
+
+  // ---- Organiser mode: PIN unlock, edit scores / goals / cards, save for everyone ----------
+  var orgBar = null;
+
+  function num(v) {
+    if (v === null || v === undefined || v === "") return null;
+    var n = Number(v);
+    return isNaN(n) ? null : n;
+  }
+
+  function ensureBar() {
+    if (!orgBar) {
+      orgBar = el("div", { "class": "cup-org-bar" });
+      orgBar.hidden = true;
+      document.body.appendChild(orgBar);
+    }
+    return orgBar;
+  }
+
+  function updateBar(msg) {
+    var bar = ensureBar();
+    bar.hidden = !org.on;
+    if (!org.on) return;
+    bar.innerHTML = "";
+    var txt = el("span", { "class": "cup-org-msg" }, msg || (org.dirty
+      ? "<b>Unsaved changes.</b> Press Save for everyone."
+      : "<b>Organiser mode.</b> Edit scores, goals and cards on the match cards."));
+    var save = el("button", { type: "button", "class": "btn cup-org-save" }, "Save for everyone");
+    save.disabled = !org.dirty;
+    save.addEventListener("click", orgSave);
+    var lk = el("button", { type: "button", "class": "cup-link-btn" }, "Lock");
+    lk.addEventListener("click", orgLock);
+    bar.appendChild(txt); bar.appendChild(save); bar.appendChild(lk);
+  }
+
+  function markDirty() { org.dirty = true; updateBar(); }
+
+  function orgLock() {
+    if (org.dirty && !window.confirm("Discard your unsaved changes?")) return;
+    org.on = false; org.pin = ""; org.dirty = false; org.draft = {};
+    try { sessionStorage.removeItem("gfc-org-pin"); } catch (e) {}
+    updateBar();
+    if (state.data) render(state.data);
+  }
+
+  function orgUnlock(p) {
+    return fetch(SAVE_URL + "?check=1", { method: "POST", headers: { "x-organiser-pin": p } }).then(function (r) {
+      if (r.ok) {
+        org.on = true; org.pin = p;
+        try { sessionStorage.setItem("gfc-org-pin", p); } catch (e) {}
+        updateBar();
+        if (state.data) render(state.data);
+        return true;
+      }
+      return (r.status === 503 || r.status === 404) ? "setup" : false;
+    }).catch(function () { return "net"; });
+  }
+
+  function orgSave() {
+    updateBar("Saving…");
+    fetch(SAVE_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-organiser-pin": org.pin },
+      body: JSON.stringify({ fixtures: org.draft })
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; });
+    }).then(function (x) {
+      if (x.r.ok) {
+        org.draft = {}; org.dirty = false;
+        return load(false).then(function () { updateBar("<b>Saved.</b> Everyone now sees the update."); });
+      }
+      if (x.r.status === 401) { org.on = false; org.pin = ""; updateBar(); openPin("That PIN isn't right any more. Unlock again."); return; }
+      updateBar("<b>Save didn't go through.</b> Check the PIN is set up in Netlify, then try again.");
+    }).catch(function () {
+      updateBar("<b>Save didn't go through.</b> Check your connection and try again.");
+    });
+  }
+
+  function openPin(note) {
+    var wrap = el("div", { "class": "cup-pin" });
+    var box = el("form", { "class": "cup-pin-box" },
+      '<h3>Organiser login</h3><p>Enter the organiser PIN to edit scores.</p>' +
+      '<input type="password" class="cup-pin-in" autocomplete="current-password" aria-label="Organiser PIN">' +
+      '<p class="cup-pin-msg"></p>' +
+      '<div class="cup-pin-btns"><button type="submit" class="btn">Unlock</button> <button type="button" class="cup-link-btn cup-pin-cancel">Cancel</button></div>');
+    wrap.appendChild(box);
+    document.body.appendChild(wrap);
+    var inp = box.querySelector(".cup-pin-in");
+    var msg = box.querySelector(".cup-pin-msg");
+    if (note) msg.textContent = note;
+    function close() { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); }
+    box.querySelector(".cup-pin-cancel").addEventListener("click", close);
+    wrap.addEventListener("click", function (e) { if (e.target === wrap) close(); });
+    box.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var p = inp.value.trim();
+      if (!p) return;
+      msg.textContent = "Checking…";
+      orgUnlock(p).then(function (res) {
+        if (res === true) close();
+        else if (res === "setup") msg.textContent = "Saving isn't set up yet. The organiser PIN hasn't been added in Netlify.";
+        else if (res === "net") msg.textContent = "Couldn't reach the server. Check your connection.";
+        else msg.textContent = "That PIN isn't right.";
+      });
+    });
+    inp.focus();
+  }
+
+  function matchEditor(f, r1, r2, ctx) {
+    var src = org.draft[f.id] || f;
+    var d = {
+      score1: num(src.score1), score2: num(src.score2),
+      goals: (src.goals || []).map(function (g) { return { player: g.player || "", team: g.team || "", goals: Number(g.goals) || 1 }; }),
+      cards: (src.cards || []).map(function (c) { return { player: c.player || "", team: c.team || "", type: c.type === "Red" ? "Red" : "Yellow" }; })
+    };
+    var sides = [
+      { v: r1.resolvedId || f.team1, n: r1.display },
+      { v: r2.resolvedId || f.team2, n: r2.display }
+    ];
+    var box = el("div", { "class": "cup-edit" });
+    function commit() { org.draft[f.id] = d; markDirty(); }
+
+    var dl = el("datalist", { id: "pl-" + f.id });
+    sides.forEach(function (s) {
+      var m = ctx.teamMeta.byId[s.v];
+      ((m && m.team && m.team.players) || []).forEach(function (p) {
+        if (p && p.name) dl.appendChild(el("option", { value: p.name }));
+      });
+    });
+    box.appendChild(dl);
+
+    var sr = el("div", { "class": "cup-edit-row" });
+    sr.appendChild(el("span", { "class": "cup-edit-lab" }, "Score"));
+    function scoreIn(key) {
+      var i = el("input", { type: "number", min: "0", max: "99", "class": "cup-edit-num", "aria-label": "Score" });
+      if (d[key] !== null) i.value = String(d[key]);
+      i.addEventListener("input", function () {
+        var v = i.value.trim();
+        d[key] = v === "" ? null : Math.max(0, Math.min(99, parseInt(v, 10) || 0));
+        commit();
+      });
+      return i;
+    }
+    sr.appendChild(scoreIn("score1"));
+    sr.appendChild(el("span", {}, "–"));
+    sr.appendChild(scoreIn("score2"));
+    box.appendChild(sr);
+
+    function sideSelect(cur, onChange) {
+      var s = el("select", { "class": "cup-edit-sel", "aria-label": "Team" });
+      var found = false;
+      sides.forEach(function (x) {
+        var o = el("option", { value: x.v }, esc(x.n));
+        if (x.v === cur) { o.selected = true; found = true; }
+        s.appendChild(o);
+      });
+      if (!found && cur) { var o2 = el("option", { value: cur }, esc(cur)); o2.selected = true; s.appendChild(o2); }
+      s.addEventListener("change", function () { onChange(s.value); });
+      return s;
+    }
+    function playerIn(item) {
+      var i = el("input", { type: "text", list: "pl-" + f.id, placeholder: "Player name", maxlength: "80", "class": "cup-edit-txt", "aria-label": "Player" });
+      i.value = item.player;
+      i.addEventListener("input", function () { item.player = i.value; commit(); });
+      return i;
+    }
+    function listEditor(title, key, blank, drawRow) {
+      var sec = el("div", { "class": "cup-edit-sec" });
+      var head = el("div", { "class": "cup-edit-row" });
+      head.appendChild(el("span", { "class": "cup-edit-lab" }, title));
+      var add = el("button", { type: "button", "class": "cup-link-btn" }, "+ Add");
+      head.appendChild(add);
+      sec.appendChild(head);
+      var rows = el("div", { "class": "cup-edit-rows" });
+      sec.appendChild(rows);
+      function draw() {
+        rows.innerHTML = "";
+        d[key].forEach(function (item, idx) {
+          var r = el("div", { "class": "cup-edit-item" });
+          drawRow(r, item);
+          var x = el("button", { type: "button", "class": "cup-edit-x", "aria-label": "Remove" }, "×");
+          x.addEventListener("click", function () { d[key].splice(idx, 1); commit(); draw(); });
+          r.appendChild(x);
+          rows.appendChild(r);
+        });
+      }
+      add.addEventListener("click", function () { d[key].push(blank()); commit(); draw(); });
+      draw();
+      return sec;
+    }
+    box.appendChild(listEditor("Goals", "goals", function () { return { player: "", team: sides[0].v, goals: 1 }; }, function (r, g) {
+      r.appendChild(sideSelect(g.team, function (v) { g.team = v; commit(); }));
+      r.appendChild(playerIn(g));
+      var n = el("input", { type: "number", min: "1", max: "20", "class": "cup-edit-num", "aria-label": "Goals" });
+      n.value = String(g.goals);
+      n.addEventListener("input", function () { g.goals = Math.max(1, Math.min(20, parseInt(n.value, 10) || 1)); commit(); });
+      r.appendChild(n);
+    }));
+    box.appendChild(listEditor("Cards", "cards", function () { return { player: "", team: sides[0].v, type: "Yellow" }; }, function (r, c) {
+      r.appendChild(sideSelect(c.team, function (v) { c.team = v; commit(); }));
+      r.appendChild(playerIn(c));
+      var t = el("select", { "class": "cup-edit-sel", "aria-label": "Card" });
+      ["Yellow", "Red"].forEach(function (k) {
+        var o = el("option", { value: k }, k);
+        if (c.type === k) o.selected = true;
+        t.appendChild(o);
+      });
+      t.addEventListener("change", function () { c.type = t.value; commit(); });
+      r.appendChild(t);
+    }));
+    return box;
+  }
+
+  function applyOverlay(data, txt) {
+    var ov = null;
+    try { ov = JSON.parse(txt); } catch (e) {}
+    if (!ov || !ov.fixtures) return "";
+    (data.fixtures || []).forEach(function (f) {
+      var o = ov.fixtures[f.id];
+      if (!o) return;
+      if ("score1" in o) f.score1 = o.score1;
+      if ("score2" in o) f.score2 = o.score2;
+      if (o.goals) f.goals = o.goals;
+      if (o.cards) f.cards = o.cards;
+    });
+    return ov.updated || "";
   }
 
   function emptyNote(text) {
@@ -721,24 +951,47 @@
       }
     }
 
+    if (!org.on) {
+      var ol = el("p", { "class": "cup-org-link" });
+      var ob = el("button", { type: "button", "class": "cup-link-btn" }, "Organiser login");
+      ob.addEventListener("click", function () { openPin(); });
+      ol.appendChild(ob);
+      panelsWrap.appendChild(ol);
+    }
+    updateBar();
+
     var hash = (window.location.hash || "").replace("#", "");
     activate(hash || state.activeTab);
   }
 
   function load(isRefresh) {
+    var ovp = fetch(SAVE_URL + "?t=" + Date.now(), { cache: "no-store" }).then(function (r) {
+      return r.ok ? r.text() : "";
+    }).catch(function () { return ""; });
     return fetch(DATA_URL + (isRefresh ? "?t=" + Date.now() : ""), { cache: "no-cache" }).then(function (r) {
       var lm = r.headers.get("Last-Modified") || "";
       return r.text().then(function (txt) { return { txt: txt, lm: lm }; });
     }).then(function (res) {
-      if (isRefresh && res.txt === state.raw) return;
-      state.raw = res.txt;
-      state.lastModified = res.lm;
-      state.data = JSON.parse(res.txt);
-      render(state.data);
+      return ovp.then(function (otxt) {
+        var raw = res.txt + "\n" + otxt;
+        if (isRefresh && (raw === state.raw || org.on)) return;
+        state.raw = raw;
+        state.lastModified = res.lm;
+        var data = JSON.parse(res.txt);
+        var upd = applyOverlay(data, otxt);
+        if (upd) {
+          var a = new Date(upd), b = new Date(res.lm || 0);
+          if (!isNaN(a) && (isNaN(b) || a > b)) state.lastModified = upd;
+        }
+        state.data = data;
+        render(data);
+      });
     });
   }
 
-  load(false).catch(function (err) {
+  load(false).then(function () {
+    try { var sp = sessionStorage.getItem("gfc-org-pin"); if (sp) orgUnlock(sp); } catch (e) {}
+  }).catch(function (err) {
     console.error("Could not load GFC Cup data", err);
   });
 

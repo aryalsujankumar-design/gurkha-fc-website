@@ -1480,3 +1480,6 @@ form.contact-form { display: flex; flex-direction: column; gap: 18px; }
   .cup-filter { flex-wrap: wrap; }
   .cup-rule-body { padding-left: 16px; }
 }
+
+/* Shop is hidden for now — delete this block to bring the Shop links back */
+a[href="shop.html"], li:has(> a[href="shop.html"]) { display: none !important; }

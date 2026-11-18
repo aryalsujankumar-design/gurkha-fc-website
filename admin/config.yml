@@ -98,6 +98,25 @@ collections:
         fields:
           - { label: "Tournament name (shown as the page title)", name: "tournamentName", widget: "string", default: "GFC Cup" }
 
+          - { label: "Small line above the title", name: "tournamentSubtitle", widget: "string", required: false, default: "Community football · Annual tournament" }
+          - { label: "Tournament date (e.g. Thu 29 Oct 2026)", name: "tournamentDate", widget: "string", required: false }
+          - { label: "Venue (e.g. Southpine Sports Centre, Brendale)", name: "venue", widget: "string", required: false }
+          - { label: "Tournament logo (optional — the club crest shows if left empty)", name: "tournamentLogo", widget: "image", required: false }
+          - { label: "Minutes per game (used for the time slots on the Fixtures tab)", name: "matchMinutes", widget: "number", value_type: "int", required: false, default: 30 }
+          - { label: "Teams going through from each group", name: "qualifiersPerGroup", widget: "number", value_type: "int", required: false, default: 2 }
+          - { label: "Note shown above the fixtures (optional)", name: "fixturesNote", widget: "string", required: false }
+          - label: "Rules & regulations (the Rules tab appears once you add one)"
+            name: "rules"
+            widget: "list"
+            required: false
+            default: []
+            summary: "{{fields.title}}"
+            hint: "Each rule section opens like an accordion on the Rules tab. Press Enter in the text box for a new paragraph."
+            fields:
+              - { label: "Section title (e.g. Team composition and squad)", name: "title", widget: "string" }
+              - { label: "Text", name: "text", widget: "text" }
+          - { label: "Intro line above the rules (optional)", name: "rulesIntro", widget: "text", required: false }
+
           - label: "Groups"
             name: "groups"
             widget: "list"

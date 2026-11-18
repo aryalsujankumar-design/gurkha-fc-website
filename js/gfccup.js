@@ -1,6 +1,11 @@
-/* Renders the GFC Cup page (group tables + fixtures + stats) from data/gfccup.json */
+/* GFC Cup — live scores & fixtures page. Renders everything from data/gfccup.json:
+   Fixtures (by time slot), Group tables, Knockouts, Top scorers, Teams and Rules. */
 (function () {
   var KNOCKOUT_ORDER = { "Quarter Final": 0, "Semi Final": 1, "Final": 2 };
+  var DATA_URL = "data/gfccup.json";
+  var REFRESH_MS = 60000;
+
+  var state = { data: null, raw: "", lastModified: "", activeTab: "fixtures", teamFilter: "" };
 
   function el(tag, attrs, html) {
     var e = document.createElement(tag);
@@ -11,55 +16,82 @@
     return e;
   }
 
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
   function hasScore(f) {
     return f.score1 !== null && f.score1 !== undefined && f.score1 !== "" &&
            f.score2 !== null && f.score2 !== undefined && f.score2 !== "";
   }
 
-  function fmtDate(f) {
-    var parts = [];
-    if (f.date) parts.push(f.date);
-    if (f.time) parts.push(f.time);
-    return parts.join(" · ");
+  // ---- Dates & times ------------------------------------------------------------------
+  function parseMinutes(t) {
+    var m = /^\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*$/i.exec(t || "");
+    if (!m) return null;
+    var h = parseInt(m[1], 10), min = m[2] ? parseInt(m[2], 10) : 0;
+    var ap = m[3] ? m[3].toLowerCase() : "";
+    if (ap === "pm" && h < 12) h += 12;
+    if (ap === "am" && h === 12) h = 0;
+    return h * 60 + min;
   }
 
-  // Builds a lookup so fixtures/goals/cards (which reference a team by its fixed Slot,
-  // e.g. "A1") always show the CURRENT club name, logo and profile link — even after the
-  // admin renames the club. Falls back to matching by the current name too, so a Goals/
-  // Cards "team" entry typed as the club name (instead of its Slot) still resolves.
+  function fmtMinutes(total) {
+    total = ((total % 1440) + 1440) % 1440;
+    var h = Math.floor(total / 60), m = total % 60;
+    var ap = h >= 12 ? "PM" : "AM";
+    var h12 = h % 12 === 0 ? 12 : h % 12;
+    return h12 + ":" + (m < 10 ? "0" : "") + m + " " + ap;
+  }
+
+  function sortKey(f, idx) {
+    var d = Date.parse(f.date || "");
+    var t = parseMinutes(f.time);
+    return [isNaN(d) ? 0 : d, t === null ? 0 : t, idx];
+  }
+
+  function cmpKey(a, b) {
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return a[i] - b[i];
+    }
+    return 0;
+  }
+
+  // ---- Teams ----------------------------------------------------------------------------
+  // Fixtures/goals/cards reference a team by its fixed Slot (e.g. "A1"); this lookup always
+  // gives back the CURRENT club name, logo and group — even after the club is renamed.
   function buildTeamMeta(groups) {
-    var byId = {};
-    var byName = {};
+    var byId = {}, byName = {}, list = [];
     (groups || []).forEach(function (g) {
       (g.teams || []).forEach(function (t) {
         if (!t) return;
         var id = t.id || t.name;
         if (!id) return;
-        var meta = { id: id, name: t.name || id, logo: t.logo || "", group: g.id };
+        var meta = { id: id, name: t.name || id, logo: t.logo || "", group: g.id, groupLabel: g.label || ("Group " + g.id), team: t };
         byId[id] = meta;
+        list.push(meta);
         if (t.name) byName[t.name.trim().toLowerCase()] = meta;
       });
     });
-    return { byId: byId, byName: byName };
+    return { byId: byId, byName: byName, list: list };
   }
 
-  // Resolves a value that may be a team's Slot ID or its current display name to that
-  // team's canonical meta ({id, name, logo, group}), or null if it matches nothing on file.
   function lookupTeam(ref, teamMeta) {
     if (!ref) return null;
     ref = String(ref).trim();
     if (teamMeta.byId[ref]) return teamMeta.byId[ref];
-    var byName = teamMeta.byName[ref.toLowerCase()];
-    return byName || null;
+    return teamMeta.byName[ref.toLowerCase()] || null;
   }
 
   function computeStandings(group, fixtures, teamMeta) {
     var stats = {};
+    var order = 0;
 
     (group.teams || []).forEach(function (t) {
       var id = t && (t.id || t.name);
       if (!id) return;
-      stats[id] = { id: id, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+      stats[id] = { id: id, order: order++, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
     });
 
     function slotId(ref) {
@@ -72,8 +104,8 @@
       if (!hasScore(f)) return;
       var s1 = Number(f.score1), s2 = Number(f.score2);
       var id1 = slotId(f.team1), id2 = slotId(f.team2);
-      if (!stats[id1]) stats[id1] = { id: id1, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
-      if (!stats[id2]) stats[id2] = { id: id2, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+      if (!stats[id1]) stats[id1] = { id: id1, order: order++, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+      if (!stats[id2]) stats[id2] = { id: id2, order: order++, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
       var a = stats[id1], b = stats[id2];
       a.p++; b.p++;
       a.gf += s1; a.ga += s2;
@@ -95,18 +127,14 @@
       if (b.pts !== a.pts) return b.pts - a.pts;
       if (b.gd !== a.gd) return b.gd - a.gd;
       if (b.gf !== a.gf) return b.gf - a.gf;
-      return a.displayName.localeCompare(b.displayName);
+      return a.order - b.order;
     });
 
     return rows;
   }
 
-  // Resolves a team slot that may be a literal team Slot ID / name, or a qualifier phrase
-  // like "Winner Group A", "Runner-up Group B", or "Winner qf1" (referencing another
-  // fixture's winner by its Match ID). Returns { display, resolvedId, pending }.
-  // resolvedId is the canonical, stable team Slot ID once known (never the display name),
-  // so the caller always looks up the CURRENT name/logo/link for it; pending is true while
-  // the slot can't be worked out yet (earlier matches not finished).
+  // Resolves a team slot that may be a literal Slot ID / name, or a qualifier phrase like
+  // "Winner Group A", "Runner-up Group B", or "Winner qf1". Returns { display, resolvedId, pending }.
   function resolveTeamRef(ref, groups, fixtures, teamMeta, depth) {
     ref = (ref || "").trim();
     if (!ref) return { display: "TBD", resolvedId: null, pending: true };
@@ -127,14 +155,11 @@
       if (!hasScore(f)) return { display: ref + " (TBD)", resolvedId: null, pending: true };
       var s1 = Number(f.score1), s2 = Number(f.score2);
       if (s1 === s2) return { display: ref + " (draw — TBD)", resolvedId: null, pending: true };
-      var winnerRef = s1 > s2 ? f.team1 : f.team2;
-      return resolveTeamRef(winnerRef, groups, fixtures, teamMeta, depth + 1);
+      return resolveTeamRef(s1 > s2 ? f.team1 : f.team2, groups, fixtures, teamMeta, depth + 1);
     }
 
-    // A literal team reference — could be a Slot ID or the current club name.
     var found = lookupTeam(ref, teamMeta);
-    var id = found ? found.id : ref;
-    return { display: found ? found.name : ref, resolvedId: id, pending: false };
+    return { display: found ? found.name : ref, resolvedId: found ? found.id : ref, pending: false };
   }
 
   function resolveGroupRank(groupId, rankIndex, groups, fixtures, teamMeta) {
@@ -153,6 +178,7 @@
     return { display: row.displayName, resolvedId: row.id, pending: false };
   }
 
+  // ---- Stats ----------------------------------------------------------------------------
   function computeTopScorers(fixtures, teamMeta) {
     var stats = {};
     fixtures.forEach(function (f) {
@@ -195,256 +221,530 @@
     return rows;
   }
 
-  // ref here is always a canonical team Slot ID (or, as a fallback, a raw string that
-  // didn't match any team on file) — never assume it's the display name.
+  // ---- Small UI pieces ---------------------------------------------------------------------
+  function profileHref(meta) {
+    return "club-profile.html?team=" + encodeURIComponent(meta.id) + "&group=" + encodeURIComponent(meta.group);
+  }
+
+  // Round crest: the club logo if there is one, otherwise a navy disc with the team's slot code.
+  function crest(meta, pendingLabel) {
+    if (meta && meta.logo) {
+      var img = el("img", { "class": "cup-crest", src: meta.logo, alt: "" });
+      // If the logo file can't be loaded, fall back to the slot-code disc instead of a broken image.
+      img.addEventListener("error", function () {
+        var c = el("span", { "class": "cup-crest cup-crest-text" });
+        c.textContent = meta.id;
+        if (img.parentNode) img.parentNode.replaceChild(c, img);
+      });
+      return img;
+    }
+    var c = el("span", { "class": "cup-crest cup-crest-text" + (meta ? "" : " cup-crest-pending") });
+    c.textContent = meta ? meta.id : (pendingLabel || "?");
+    return c;
+  }
+
+  // Inline logo + name (used in tables). ref is a Slot ID, or a raw name that matched nothing.
   function teamBadge(ref, teamMeta) {
     var meta = teamMeta.byId[ref] || lookupTeam(ref, teamMeta);
     var label = meta ? meta.name : ref;
     var span = el("span", { "class": "team-name-badge" });
-    if (meta && meta.logo) {
-      span.appendChild(el("img", { "class": "team-logo", src: meta.logo, alt: label }));
-    }
+    span.appendChild(crest(meta));
     if (meta) {
-      var link = el("a", {
-        "class": "team-link",
-        href: "club-profile.html?team=" + encodeURIComponent(meta.id) + "&group=" + encodeURIComponent(meta.group)
-      }, label);
-      span.appendChild(link);
+      span.appendChild(el("a", { "class": "team-link", href: profileHref(meta) }, esc(label)));
     } else {
-      span.appendChild(el("span", {}, label));
+      span.appendChild(el("span", {}, esc(label)));
     }
     return span;
   }
 
-  // Renders a fixture's team slot: a resolved literal team (badge/link, always showing the
-  // CURRENT club name) or a still-pending qualifier phrase like "Winner Group A (TBD)"
-  // shown as plain, muted text.
-  function teamSlot(ref, groups, fixtures, teamMeta) {
-    var resolved = resolveTeamRef(ref, groups, fixtures, teamMeta, 0);
+  // One side of a match card: resolved team (name + crest, linked) or pending qualifier text.
+  function matchSide(ref, ctx, side) {
+    var resolved = resolveTeamRef(ref, ctx.groups, ctx.fixtures, ctx.teamMeta, 0);
+    var wrap = el("div", { "class": "cup-side cup-side-" + side });
+    var meta = (!resolved.pending && resolved.resolvedId) ? ctx.teamMeta.byId[resolved.resolvedId] : null;
+    var nameEl;
     if (!resolved.pending && resolved.resolvedId) {
-      return teamBadge(resolved.resolvedId, teamMeta);
-    }
-    return el("span", { "class": "team-name-badge team-pending" }, resolved.display);
-  }
-
-  function renderStandingsTable(rows, teamMeta) {
-    if (!rows.length) {
-      return el("p", { "class": "gfccup-empty" }, "Teams for this group haven't been announced yet.");
-    }
-    var table = el("table", { "class": "standings-table" });
-    var thead = el("thead", {}, "<tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr>");
-    table.appendChild(thead);
-    var tbody = el("tbody");
-    rows.forEach(function (r, i) {
-      var tr = el("tr");
-      tr.appendChild(el("td", { "class": "pos" }, String(i + 1)));
-      var teamTd = el("td", { "class": "team" });
-      teamTd.appendChild(teamBadge(r.id, teamMeta));
-      tr.appendChild(teamTd);
-      tr.appendChild(el("td", {}, String(r.p)));
-      tr.appendChild(el("td", {}, String(r.w)));
-      tr.appendChild(el("td", {}, String(r.d)));
-      tr.appendChild(el("td", {}, String(r.l)));
-      tr.appendChild(el("td", {}, String(r.gf)));
-      tr.appendChild(el("td", {}, String(r.ga)));
-      tr.appendChild(el("td", {}, String(r.gd)));
-      tr.appendChild(el("td", { "class": "pts" }, String(r.pts)));
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    var wrap = el("div", { "class": "standings-wrap" });
-    wrap.appendChild(table);
-    return wrap;
-  }
-
-  function renderFixtureRow(f, teamMeta, groups, fixtures) {
-    var row = el("div", { "class": "fixture-row" });
-    row.appendChild(el("div", { "class": "fixture-meta" }, fmtDate(f) || "&nbsp;"));
-    var match = el("div", { "class": "fixture-match" });
-    var team1El = el("span", { "class": "fixture-team" });
-    team1El.appendChild(teamSlot(f.team1, groups, fixtures, teamMeta));
-    match.appendChild(team1El);
-    if (hasScore(f)) {
-      match.appendChild(el("span", { "class": "fixture-score" }, f.score1 + " – " + f.score2));
+      nameEl = meta
+        ? el("a", { "class": "cup-side-name team-link", href: profileHref(meta) }, esc(meta.name))
+        : el("span", { "class": "cup-side-name" }, esc(resolved.display));
     } else {
-      match.appendChild(el("span", { "class": "fixture-vs" }, "vs"));
+      nameEl = el("span", { "class": "cup-side-name team-pending" }, esc(resolved.display));
     }
-    var team2El = el("span", { "class": "fixture-team" });
-    team2El.appendChild(teamSlot(f.team2, groups, fixtures, teamMeta));
-    match.appendChild(team2El);
-    row.appendChild(match);
+    var c = crest(meta, "?");
+    if (side === "left") { wrap.appendChild(nameEl); wrap.appendChild(c); }
+    else { wrap.appendChild(c); wrap.appendChild(nameEl); }
+    return { el: wrap, resolved: resolved };
+  }
+
+  function matchCard(f, ctx) {
+    var played = hasScore(f);
+    var card = el("article", { "class": "cup-match" + (played ? " is-played" : "") });
+
+    var tagParts = [];
+    if (f.stage === "Group Stage") tagParts.push("Group " + (f.group || ""));
+    else tagParts.push(f.stage);
+    tagParts.push("Match " + (ctx.matchNo[f.id] || ""));
+    var head = el("div", { "class": "cup-match-head" });
+    head.appendChild(el("span", { "class": "cup-match-tag" }, esc(tagParts.join(" · "))));
     if (f.field) {
-      row.appendChild(el("div", { "class": "fixture-field" },
-        '<span class="fixture-field-label">Field</span>' + f.field));
+      head.appendChild(el("span", { "class": "cup-match-field" }, '<em>Field</em> ' + esc(f.field)));
     }
-    return row;
+    card.appendChild(head);
+
+    var body = el("div", { "class": "cup-match-body" });
+    var s1 = matchSide(f.team1, ctx, "left");
+    var s2 = matchSide(f.team2, ctx, "right");
+    body.appendChild(s1.el);
+
+    var center = el("div", { "class": "cup-center" });
+    if (played) {
+      center.appendChild(el("span", { "class": "cup-score" }, esc(f.score1) + " – " + esc(f.score2)));
+      center.appendChild(el("span", { "class": "cup-time" }, "Full time"));
+      var a = Number(f.score1), b = Number(f.score2);
+      if (a > b) s1.el.classList.add("is-winner");
+      else if (b > a) s2.el.classList.add("is-winner");
+    } else {
+      center.appendChild(el("span", { "class": "cup-kickoff" }, esc(f.time || "vs")));
+    }
+    body.appendChild(center);
+    body.appendChild(s2.el);
+    card.appendChild(body);
+    return card;
   }
 
-  function renderFixturesList(fixtureList, teamMeta, groups, allFixtures) {
-    if (!fixtureList.length) {
-      return el("p", { "class": "gfccup-empty" }, "Fixtures haven't been scheduled yet.");
-    }
-    var list = el("div", { "class": "fixtures-list" });
-    fixtureList.forEach(function (f) { list.appendChild(renderFixtureRow(f, teamMeta, groups, allFixtures)); });
-    return list;
+  function emptyNote(text) {
+    return el("p", { "class": "gfccup-empty" }, esc(text));
   }
 
-  function renderTopScorers(rows, teamMeta) {
-    if (!rows.length) {
-      return el("p", { "class": "gfccup-empty" }, "No goals have been recorded yet.");
+  // ---- Hero & "Next up" -----------------------------------------------------------------
+  function renderHero(data, ctx) {
+    var title = document.getElementById("gfc-cup-title");
+    if (title && data.tournamentName) title.textContent = data.tournamentName;
+    if (data.tournamentName) document.title = data.tournamentName + " | Gurkha FC Brisbane Nepalese Football Club";
+
+    var eyebrow = document.getElementById("cup-eyebrow");
+    if (eyebrow) eyebrow.textContent = data.tournamentSubtitle || "Community football · Annual tournament";
+
+    var when = document.getElementById("cup-when");
+    if (when) {
+      var firstDate = (data.fixtures || []).filter(function (f) { return f.date; })[0];
+      var parts = [];
+      var d = data.tournamentDate || (firstDate ? firstDate.date : "");
+      if (d) parts.push(d);
+      if (data.venue) parts.push(data.venue);
+      when.textContent = parts.join(" · ");
+      when.style.display = parts.length ? "" : "none";
     }
-    var table = el("table", { "class": "standings-table" });
-    table.appendChild(el("thead", {}, "<tr><th>#</th><th>Player</th><th>Team</th><th>Goals</th></tr>"));
-    var tbody = el("tbody");
-    rows.forEach(function (r, i) {
-      var tr = el("tr");
-      tr.appendChild(el("td", { "class": "pos" }, String(i + 1)));
-      tr.appendChild(el("td", { "class": "team" }, r.player));
-      var teamTd = el("td", {});
-      teamTd.appendChild(teamBadge(r.team, teamMeta));
-      tr.appendChild(teamTd);
-      tr.appendChild(el("td", { "class": "pts" }, String(r.goals)));
-      tbody.appendChild(tr);
+
+    var badge = document.getElementById("cup-badge");
+    var badgeImg = document.getElementById("cup-badge-img");
+    if (badge && badgeImg) {
+      badgeImg.src = data.tournamentLogo || "images/gurkha-fc-logo.png";
+      badgeImg.alt = (data.tournamentName || "GFC Cup") + " logo";
+      badge.hidden = false;
+    }
+
+    renderNextUp(data, ctx);
+  }
+
+  function renderNextUp(data, ctx) {
+    var wrap = document.getElementById("cup-nextup");
+    var items = document.getElementById("cup-nextup-items");
+    var tag = document.getElementById("cup-nextup-tag");
+    if (!wrap || !items || !tag) return;
+    items.innerHTML = "";
+
+    var fixtures = ctx.fixtures;
+    if (!fixtures.length) { wrap.hidden = true; return; }
+
+    var unplayed = ctx.ordered.filter(function (o) { return !hasScore(o.f); });
+    wrap.hidden = false;
+    if (!unplayed.length) {
+      tag.textContent = "Full time";
+      items.appendChild(el("span", { "class": "cup-nextup-item" }, "All matches have been played"));
+      return;
+    }
+
+    tag.textContent = "Next up";
+    var first = unplayed[0];
+    unplayed.filter(function (o) { return cmpKey([first.key[0], first.key[1]], [o.key[0], o.key[1]]) === 0; })
+      .forEach(function (o) {
+        var f = o.f;
+        var a = resolveTeamRef(f.team1, ctx.groups, ctx.fixtures, ctx.teamMeta, 0).display;
+        var b = resolveTeamRef(f.team2, ctx.groups, ctx.fixtures, ctx.teamMeta, 0).display;
+        var bits = [a + " v " + b];
+        if (f.field) bits.push(f.field);
+        if (f.time) bits.push(f.time);
+        items.appendChild(el("span", { "class": "cup-nextup-item" }, esc(bits.join(" · "))));
+      });
+  }
+
+  // ---- Panels ---------------------------------------------------------------------------
+  function renderFixturesPanel(ctx) {
+    var panel = el("div", { "class": "tab-panel", id: "tab-fixtures", role: "tabpanel" });
+
+    var groupFixtures = ctx.ordered.filter(function (o) { return o.f.stage === "Group Stage"; });
+    if (!groupFixtures.length) {
+      panel.appendChild(emptyNote("Fixtures haven't been scheduled yet."));
+      return panel;
+    }
+
+    // Team filter
+    var bar = el("div", { "class": "cup-filter" });
+    bar.appendChild(el("label", { "for": "cup-team-filter" }, "Find your team"));
+    var select = el("select", { id: "cup-team-filter" });
+    select.appendChild(el("option", { value: "" }, "All teams"));
+    ctx.teamMeta.list.forEach(function (m) {
+      var o = el("option", { value: m.id }, esc(m.name + " (" + m.groupLabel + ")"));
+      if (state.teamFilter === m.id) o.selected = true;
+      select.appendChild(o);
     });
-    table.appendChild(tbody);
+    bar.appendChild(select);
+    panel.appendChild(bar);
+
+    if (ctx.data.fixturesNote) {
+      panel.appendChild(el("p", { "class": "cup-note" }, esc(ctx.data.fixturesNote)));
+    }
+
+    var results = el("div", { "class": "cup-slots" });
+    panel.appendChild(results);
+
+    function draw() {
+      results.innerHTML = "";
+      var filter = state.teamFilter;
+      var list = groupFixtures.filter(function (o) {
+        if (!filter) return true;
+        var a = resolveTeamRef(o.f.team1, ctx.groups, ctx.fixtures, ctx.teamMeta, 0).resolvedId;
+        var b = resolveTeamRef(o.f.team2, ctx.groups, ctx.fixtures, ctx.teamMeta, 0).resolvedId;
+        return a === filter || b === filter;
+      });
+      if (!list.length) { results.appendChild(emptyNote("No matches found for that team.")); return; }
+
+      var dates = [];
+      list.forEach(function (o) { if (dates.indexOf(o.f.date || "") === -1) dates.push(o.f.date || ""); });
+      var multiDate = dates.length > 1;
+
+      var lastDate = null, lastSlot = null, grid = null;
+      list.forEach(function (o) {
+        var f = o.f;
+        if (multiDate && (f.date || "") !== lastDate) {
+          lastDate = f.date || "";
+          results.appendChild(el("h3", { "class": "cup-date-head" }, esc(lastDate)));
+          lastSlot = null;
+        }
+        var slotKey = (f.date || "") + "|" + (f.time || "");
+        if (slotKey !== lastSlot) {
+          lastSlot = slotKey;
+          var start = parseMinutes(f.time);
+          var label = f.time || "Time TBC";
+          var mins = Number(ctx.data.matchMinutes);
+          if (start !== null && mins > 0) label = fmtMinutes(start) + " – " + fmtMinutes(start + mins);
+          results.appendChild(el("h4", { "class": "cup-slot-head" }, esc(label)));
+          grid = el("div", { "class": "cup-grid" });
+          results.appendChild(grid);
+        }
+        grid.appendChild(matchCard(f, ctx));
+      });
+    }
+
+    select.addEventListener("change", function () {
+      state.teamFilter = select.value;
+      draw();
+    });
+    draw();
+    return panel;
+  }
+
+  function renderGroupsPanel(ctx) {
+    var panel = el("div", { "class": "tab-panel", id: "tab-groups", role: "tabpanel" });
+    panel.hidden = true;
+    if (!ctx.groups.length) { panel.appendChild(emptyNote("Groups haven't been announced yet.")); return panel; }
+
+    var through = Number(ctx.data.qualifiersPerGroup) || 2;
+    var legend = el("div", { "class": "cup-legend" });
+    legend.appendChild(el("span", { "class": "cup-legend-item" }, '<i class="cup-dot"></i> Top ' + through + ' go through'));
+    panel.appendChild(legend);
+
+    var grid = el("div", { "class": "cup-grid cup-grid-groups" });
+    ctx.groups.forEach(function (g) {
+      var card = el("section", { "class": "cup-card" });
+      var gf = ctx.fixtures.filter(function (f) { return f.stage === "Group Stage" && f.group === g.id; });
+      var played = gf.filter(hasScore).length;
+
+      var head = el("div", { "class": "cup-card-head" });
+      head.appendChild(el("h3", {}, esc(g.label || ("Group " + g.id))));
+      head.appendChild(el("span", { "class": "cup-pill" }, played + " of " + gf.length + " played"));
+      card.appendChild(head);
+
+      var rows = computeStandings(g, ctx.fixtures, ctx.teamMeta);
+      if (!rows.length) {
+        card.appendChild(emptyNote("Teams for this group haven't been announced yet."));
+      } else {
+        var wrap = el("div", { "class": "standings-wrap" });
+        var table = el("table", { "class": "cup-table" });
+        table.appendChild(el("thead", {}, "<tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr>"));
+        var tbody = el("tbody");
+        rows.forEach(function (r, i) {
+          var tr = el("tr", { "class": (played > 0 && i < through) ? "is-through" : "" });
+          tr.appendChild(el("td", { "class": "pos" }, String(i + 1)));
+          var td = el("td", { "class": "team" });
+          td.appendChild(teamBadge(r.id, ctx.teamMeta));
+          tr.appendChild(td);
+          [r.p, r.w, r.d, r.l, r.gf, r.ga, r.gd].forEach(function (v) { tr.appendChild(el("td", {}, String(v))); });
+          tr.appendChild(el("td", { "class": "pts" }, String(r.pts)));
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        wrap.appendChild(table);
+        card.appendChild(wrap);
+      }
+      grid.appendChild(card);
+    });
+    panel.appendChild(grid);
+    return panel;
+  }
+
+  function renderKnockoutsPanel(ctx) {
+    var panel = el("div", { "class": "tab-panel", id: "tab-knockouts", role: "tabpanel" });
+    panel.hidden = true;
+
+    var ko = ctx.ordered.filter(function (o) { return o.f.stage !== "Group Stage"; });
+    ko.sort(function (a, b) {
+      var oa = KNOCKOUT_ORDER.hasOwnProperty(a.f.stage) ? KNOCKOUT_ORDER[a.f.stage] : 99;
+      var ob = KNOCKOUT_ORDER.hasOwnProperty(b.f.stage) ? KNOCKOUT_ORDER[b.f.stage] : 99;
+      if (oa !== ob) return oa - ob;
+      return cmpKey(a.key, b.key);
+    });
+
+    if (!ko.length) {
+      panel.appendChild(emptyNote("Knockout fixtures will appear here once the group stage is decided."));
+      return panel;
+    }
+
+    panel.appendChild(el("p", { "class": "cup-note" }, "Teams fill in automatically once every group game is played."));
+
+    var rounds = [];
+    ko.forEach(function (o) { if (rounds.indexOf(o.f.stage) === -1) rounds.push(o.f.stage); });
+    rounds.forEach(function (round) {
+      var items = ko.filter(function (o) { return o.f.stage === round; });
+      var sample = items[0].f;
+      var sub = [];
+      if (sample.time) sub.push(sample.time);
+      panel.appendChild(el("h3", { "class": "cup-round-head" }, esc(round) + (sub.length ? ' <span>' + esc(sub.join(" · ")) + '</span>' : "")));
+      var grid = el("div", { "class": "cup-grid" });
+      items.forEach(function (o) {
+        grid.appendChild(matchCard(o.f, ctx));
+      });
+      panel.appendChild(grid);
+    });
+    return panel;
+  }
+
+  function statTable(headHtml, rows, rowFn) {
     var wrap = el("div", { "class": "standings-wrap" });
+    var table = el("table", { "class": "cup-table cup-table-stat" });
+    table.appendChild(el("thead", {}, headHtml));
+    var tbody = el("tbody");
+    rows.forEach(function (r, i) { tbody.appendChild(rowFn(r, i)); });
+    table.appendChild(tbody);
     wrap.appendChild(table);
     return wrap;
   }
 
-  function renderCardsTable(rows, teamMeta) {
-    if (!rows.length) {
-      return el("p", { "class": "gfccup-empty" }, "No cards have been recorded yet.");
-    }
-    var table = el("table", { "class": "standings-table" });
-    table.appendChild(el("thead", {}, "<tr><th>Player</th><th>Team</th><th>Yellow</th><th>Red</th></tr>"));
-    var tbody = el("tbody");
-    rows.forEach(function (r) {
+  function renderStatsPanel(ctx) {
+    var panel = el("div", { "class": "tab-panel", id: "tab-stats", role: "tabpanel" });
+    panel.hidden = true;
+    var grid = el("div", { "class": "cup-grid cup-grid-stats" });
+
+    var scorers = computeTopScorers(ctx.fixtures, ctx.teamMeta);
+    var c1 = el("section", { "class": "cup-card" });
+    c1.appendChild(el("div", { "class": "cup-card-head" }, "<h3>Top scorers</h3>"));
+    if (!scorers.length) c1.appendChild(emptyNote("No goals have been recorded yet."));
+    else c1.appendChild(statTable("<tr><th>#</th><th>Player</th><th>Team</th><th>Goals</th></tr>", scorers, function (r, i) {
       var tr = el("tr");
-      tr.appendChild(el("td", { "class": "team" }, r.player));
-      var teamTd = el("td", {});
-      teamTd.appendChild(teamBadge(r.team, teamMeta));
-      tr.appendChild(teamTd);
+      tr.appendChild(el("td", { "class": "pos" }, String(i + 1)));
+      tr.appendChild(el("td", { "class": "team" }, esc(r.player)));
+      var td = el("td"); td.appendChild(teamBadge(r.team, ctx.teamMeta)); tr.appendChild(td);
+      tr.appendChild(el("td", { "class": "pts" }, String(r.goals)));
+      return tr;
+    }));
+    grid.appendChild(c1);
+
+    var cards = computeCards(ctx.fixtures, ctx.teamMeta);
+    var c2 = el("section", { "class": "cup-card" });
+    c2.appendChild(el("div", { "class": "cup-card-head" }, "<h3>Cards</h3>"));
+    if (!cards.length) c2.appendChild(emptyNote("No cards have been recorded yet."));
+    else c2.appendChild(statTable("<tr><th>Player</th><th>Team</th><th>Yellow</th><th>Red</th></tr>", cards, function (r) {
+      var tr = el("tr");
+      tr.appendChild(el("td", { "class": "team" }, esc(r.player)));
+      var td = el("td"); td.appendChild(teamBadge(r.team, ctx.teamMeta)); tr.appendChild(td);
       tr.appendChild(el("td", {}, String(r.yellow)));
       tr.appendChild(el("td", { "class": "pts" }, String(r.red)));
-      tbody.appendChild(tr);
+      return tr;
+    }));
+    grid.appendChild(c2);
+
+    panel.appendChild(grid);
+    return panel;
+  }
+
+  function renderTeamsPanel(ctx) {
+    var panel = el("div", { "class": "tab-panel", id: "tab-teams", role: "tabpanel" });
+    panel.hidden = true;
+    if (!ctx.groups.length) { panel.appendChild(emptyNote("Teams haven't been announced yet.")); return panel; }
+    panel.appendChild(el("p", { "class": "cup-note" }, "Tap a team to see its squad, manager and coach."));
+    var grid = el("div", { "class": "cup-grid cup-grid-teams" });
+    ctx.groups.forEach(function (g) {
+      var card = el("section", { "class": "cup-card" });
+      card.appendChild(el("div", { "class": "cup-card-head" }, "<h3>" + esc(g.label || ("Group " + g.id)) + "</h3>"));
+      var list = el("ol", { "class": "cup-team-list" });
+      (g.teams || []).forEach(function (t, i) {
+        var meta = ctx.teamMeta.byId[t.id || t.name];
+        var li = el("li");
+        li.appendChild(el("span", { "class": "cup-team-pos" }, String(i + 1)));
+        li.appendChild(teamBadge(t.id || t.name, ctx.teamMeta));
+        list.appendChild(li);
+      });
+      card.appendChild(list);
+      grid.appendChild(card);
     });
-    table.appendChild(tbody);
-    var wrap = el("div", { "class": "standings-wrap" });
-    wrap.appendChild(table);
-    return wrap;
+    panel.appendChild(grid);
+    return panel;
+  }
+
+  function renderRulesPanel(ctx) {
+    var rules = (ctx.data.rules || []).filter(function (r) { return r && (r.title || r.text); });
+    if (!rules.length) return null;
+    var panel = el("div", { "class": "tab-panel", id: "tab-rules", role: "tabpanel" });
+    panel.hidden = true;
+
+    var top = el("div", { "class": "cup-rules-top" });
+    top.appendChild(el("h3", {}, "Official rules & regulations"));
+    var btns = el("div", { "class": "cup-rules-btns" });
+    var exp = el("button", { type: "button", "class": "cup-link-btn" }, "Expand all");
+    var col = el("button", { type: "button", "class": "cup-link-btn" }, "Collapse all");
+    btns.appendChild(exp); btns.appendChild(col);
+    top.appendChild(btns);
+    panel.appendChild(top);
+
+    if (ctx.data.rulesIntro) panel.appendChild(el("p", { "class": "cup-note" }, esc(ctx.data.rulesIntro)));
+
+    var list = el("div", { "class": "cup-rules" });
+    rules.forEach(function (r, i) {
+      var d = el("details", { "class": "cup-rule" });
+      var s = el("summary", {}, '<span class="cup-rule-num">' + (i + 1) + '</span><span>' + esc(r.title || "") + '</span>');
+      d.appendChild(s);
+      var body = el("div", { "class": "cup-rule-body" });
+      String(r.text || "").split(/\n+/).forEach(function (line) {
+        if (line.trim()) body.appendChild(el("p", {}, esc(line.trim())));
+      });
+      d.appendChild(body);
+      list.appendChild(d);
+    });
+    panel.appendChild(list);
+
+    function setAll(open) {
+      list.querySelectorAll("details").forEach(function (d) { d.open = open; });
+    }
+    exp.addEventListener("click", function () { setAll(true); });
+    col.addEventListener("click", function () { setAll(false); });
+    return panel;
+  }
+
+  // ---- Page assembly ----------------------------------------------------------------------
+  function buildContext(data) {
+    var groups = data.groups || [];
+    var fixtures = data.fixtures || [];
+    var teamMeta = buildTeamMeta(groups);
+    var ordered = fixtures.map(function (f, i) { return { f: f, key: sortKey(f, i) }; });
+    ordered.sort(function (a, b) { return cmpKey(a.key, b.key); });
+    var matchNo = {};
+    ordered.forEach(function (o, i) { if (o.f.id) matchNo[o.f.id] = i + 1; });
+    return { data: data, groups: groups, fixtures: fixtures, teamMeta: teamMeta, ordered: ordered, matchNo: matchNo };
+  }
+
+  function activate(tabId) {
+    var btns = document.querySelectorAll("#gfccup-tabs .tab-btn");
+    var found = false;
+    btns.forEach(function (b) { if (b.getAttribute("data-tab") === tabId) found = true; });
+    if (!found) tabId = "fixtures";
+    state.activeTab = tabId;
+    btns.forEach(function (b) {
+      var on = b.getAttribute("data-tab") === tabId;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    document.querySelectorAll("#gfccup-panels .tab-panel").forEach(function (p) {
+      p.hidden = p.id !== "tab-" + tabId;
+    });
   }
 
   function render(data) {
     var tabsWrap = document.getElementById("gfccup-tabs");
     var panelsWrap = document.getElementById("gfccup-panels");
     if (!tabsWrap || !panelsWrap) return;
+    tabsWrap.innerHTML = "";
+    panelsWrap.innerHTML = "";
 
-    var titleEl = document.getElementById("gfc-cup-title");
-    if (titleEl && data.tournamentName) titleEl.textContent = data.tournamentName;
-    if (data.tournamentName) document.title = data.tournamentName + " | Gurkha FC Brisbane Nepalese Football Club";
+    var ctx = buildContext(data);
+    renderHero(data, ctx);
 
-    var groups = data.groups || [];
-    var fixtures = data.fixtures || [];
-    var teamMeta = buildTeamMeta(groups);
+    var tabs = [
+      { id: "fixtures", label: "Fixtures", panel: renderFixturesPanel(ctx) },
+      { id: "groups", label: "Group tables", panel: renderGroupsPanel(ctx) },
+      { id: "knockouts", label: "Knockouts", panel: renderKnockoutsPanel(ctx) },
+      { id: "stats", label: "Top scorers", panel: renderStatsPanel(ctx) },
+      { id: "teams", label: "Teams", panel: renderTeamsPanel(ctx) }
+    ];
+    var rules = renderRulesPanel(ctx);
+    if (rules) tabs.push({ id: "rules", label: "Rules", panel: rules });
 
-    groups.forEach(function (g, i) {
-      var isFirst = i === 0;
+    tabs.forEach(function (t) {
       var btn = el("button", {
-        type: "button",
-        "class": "tab-btn" + (isFirst ? " active" : ""),
-        "data-tab": "group-" + g.id,
-        role: "tab",
-        "aria-selected": isFirst ? "true" : "false",
-        id: "tab-btn-group-" + g.id,
-        "aria-controls": "tab-group-" + g.id
-      }, g.label || ("Group " + g.id));
+        type: "button", "class": "tab-btn", "data-tab": t.id, role: "tab",
+        "aria-selected": "false", id: "tab-btn-" + t.id, "aria-controls": "tab-" + t.id
+      }, t.label);
+      btn.addEventListener("click", function () {
+        activate(t.id);
+        try { history.replaceState(null, "", "#" + t.id); } catch (e) {}
+      });
       tabsWrap.appendChild(btn);
-
-      var panel = el("div", {
-        "class": "tab-panel",
-        id: "tab-group-" + g.id,
-        role: "tabpanel",
-        "aria-labelledby": "tab-btn-group-" + g.id
-      });
-      if (!isFirst) panel.setAttribute("hidden", "");
-
-      var standingsRows = computeStandings(g, fixtures, teamMeta);
-      panel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Group Table"));
-      panel.appendChild(renderStandingsTable(standingsRows, teamMeta));
-
-      var groupFixtures = fixtures.filter(function (f) { return f.stage === "Group Stage" && f.group === g.id; });
-      panel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Fixtures & Results"));
-      panel.appendChild(renderFixturesList(groupFixtures, teamMeta, groups, fixtures));
-
-      panelsWrap.appendChild(panel);
+      panelsWrap.appendChild(t.panel);
     });
 
-    // Knockouts tab
-    var koBtn = el("button", {
-      type: "button", "class": "tab-btn", "data-tab": "knockouts", role: "tab",
-      "aria-selected": "false", id: "tab-btn-knockouts", "aria-controls": "tab-knockouts"
-    }, "Knockouts");
-    tabsWrap.appendChild(koBtn);
-
-    var koPanel = el("div", {
-      "class": "tab-panel", id: "tab-knockouts", role: "tabpanel", "aria-labelledby": "tab-btn-knockouts"
-    });
-    koPanel.setAttribute("hidden", "");
-
-    var koFixtures = fixtures.filter(function (f) { return f.stage !== "Group Stage"; });
-    koFixtures.sort(function (a, b) {
-      var oa = KNOCKOUT_ORDER.hasOwnProperty(a.stage) ? KNOCKOUT_ORDER[a.stage] : 99;
-      var ob = KNOCKOUT_ORDER.hasOwnProperty(b.stage) ? KNOCKOUT_ORDER[b.stage] : 99;
-      return oa - ob;
-    });
-
-    if (!koFixtures.length) {
-      koPanel.appendChild(el("p", { "class": "gfccup-empty" }, "Knockout fixtures will appear here once the group stage is decided."));
-    } else {
-      var rounds = [];
-      koFixtures.forEach(function (f) {
-        if (rounds.indexOf(f.stage) === -1) rounds.push(f.stage);
-      });
-      rounds.forEach(function (roundName) {
-        koPanel.appendChild(el("h3", { "class": "gfccup-subhead" }, roundName));
-        var roundFixtures = koFixtures.filter(function (f) { return f.stage === roundName; });
-        koPanel.appendChild(renderFixturesList(roundFixtures, teamMeta, groups, fixtures));
-      });
+    var footer = el("p", { "class": "cup-updated" });
+    if (state.lastModified) {
+      var d = new Date(state.lastModified);
+      if (!isNaN(d)) {
+        footer.textContent = "Last updated " + d.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+        panelsWrap.appendChild(footer);
+      }
     }
 
-    panelsWrap.appendChild(koPanel);
-
-    // Stats tab — Top Scorers + Cards, aggregated across every fixture in the tournament
-    var statsBtn = el("button", {
-      type: "button", "class": "tab-btn", "data-tab": "stats", role: "tab",
-      "aria-selected": "false", id: "tab-btn-stats", "aria-controls": "tab-stats"
-    }, "Stats");
-    tabsWrap.appendChild(statsBtn);
-
-    var statsPanel = el("div", {
-      "class": "tab-panel", id: "tab-stats", role: "tabpanel", "aria-labelledby": "tab-btn-stats"
-    });
-    statsPanel.setAttribute("hidden", "");
-
-    var scorers = computeTopScorers(fixtures, teamMeta);
-    statsPanel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Top Scorers"));
-    statsPanel.appendChild(renderTopScorers(scorers, teamMeta));
-
-    var cards = computeCards(fixtures, teamMeta);
-    statsPanel.appendChild(el("h3", { "class": "gfccup-subhead" }, "Cards"));
-    statsPanel.appendChild(renderCardsTable(cards, teamMeta));
-
-    panelsWrap.appendChild(statsPanel);
-
-    if (groups.length === 0) {
-      tabsWrap.style.display = "none";
-    }
-
-    if (window.GFC_initTabs) window.GFC_initTabs();
+    var hash = (window.location.hash || "").replace("#", "");
+    activate(hash || state.activeTab);
   }
 
-  fetch("data/gfccup.json").then(function (r) { return r.json(); }).then(render).catch(function (err) {
+  function load(isRefresh) {
+    return fetch(DATA_URL + (isRefresh ? "?t=" + Date.now() : ""), { cache: "no-cache" }).then(function (r) {
+      var lm = r.headers.get("Last-Modified") || "";
+      return r.text().then(function (txt) { return { txt: txt, lm: lm }; });
+    }).then(function (res) {
+      if (isRefresh && res.txt === state.raw) return;
+      state.raw = res.txt;
+      state.lastModified = res.lm;
+      state.data = JSON.parse(res.txt);
+      render(state.data);
+    });
+  }
+
+  load(false).catch(function (err) {
     console.error("Could not load GFC Cup data", err);
   });
+
+  // Keep an open page fresh: pick up new scores without a manual reload.
+  setInterval(function () {
+    if (document.hidden) return;
+    load(true).catch(function () {});
+  }, REFRESH_MS);
 })();

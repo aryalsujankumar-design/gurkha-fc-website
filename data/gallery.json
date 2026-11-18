@@ -436,7 +436,9 @@
           "src": "images/uploads/gfc-cup-2025-match-04.jpg",
           "alt": "Match action at the 2025 Expert GFC Cup"
         }
-      ]
+      ],
+      "thumb": "images/gfc-7th-badge.png",
+      "thumbStyle": "badge"
     },
     {
       "id": "gfc-6th",
@@ -525,7 +527,9 @@
           "src": "images/uploads/gfc-cup-2024-19.jpg",
           "alt": "Players in action at the 2024 Expert GFC Cup"
         }
-      ]
+      ],
+      "thumb": "images/gfc-6th-badge.png",
+      "thumbStyle": "badge"
     }
   ]
 }

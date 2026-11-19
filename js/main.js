@@ -52,3 +52,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+
+// Footer legal links (Privacy Policy, Terms of Service, Cookie Policy) on every page
+(function () {
+  function addLegal() {
+    var fb = document.querySelector(".footer-bottom");
+    if (!fb || fb.querySelector(".legal-links")) return;
+    var s = document.createElement("span");
+    s.className = "legal-links";
+    s.innerHTML = '<a href="/privacy-policy">Privacy Policy</a> · <a href="/terms-of-service">Terms of Service</a> · <a href="/cookie-policy">Cookie Policy</a>';
+    fb.insertBefore(s, fb.lastElementChild);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", addLegal);
+  else addLegal();
+})();
